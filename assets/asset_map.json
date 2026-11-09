@@ -1,0 +1,47 @@
+{
+  "palette": {
+    "ink": "#12192b",
+    "panel": "#1e2a44",
+    "steel": "#2a3a5e",
+    "slate": "#4a5a78",
+    "muted": "#8a96ad",
+    "text": "#f2f5fa",
+    "amber": "#ffb238",
+    "flame": "#ff6b35",
+    "teal": "#3fc1c9",
+    "danger": "#e5484d"
+  },
+  "sprites": {
+    "player.legs": {
+      "texture": "",
+      "color": "steel",
+      "polygon": [[-10, -30], [10, -30], [10, 0], [-10, 0]]
+    },
+    "player.torso": {
+      "texture": "",
+      "color": "teal",
+      "polygon": [[-14, -54], [14, -54], [14, -26], [-14, -26]]
+    },
+    "player.head": {
+      "texture": "",
+      "color": "text",
+      "polygon": [[0, -72], [9, -67], [9, -57], [0, -52], [-9, -57], [-9, -67]]
+    },
+    "player.jetpack": {
+      "texture": "",
+      "color": "muted",
+      "polygon": [[-23, -52], [-13, -52], [-13, -24], [-23, -24]]
+    },
+    "player.arm": {
+      "texture": "",
+      "color": "amber",
+      "polygon": [[0, -4], [30, -4], [30, 4], [0, 4]]
+    }
+  },
+  "tiles": {
+    "solid": {"texture": "", "color": "slate"},
+    "solid_top": {"texture": "", "color": "slate", "top_color": "teal", "top_height": 4},
+    "oneway": {"texture": "", "color": "muted", "top_color": "amber", "top_height": 4, "height": 12},
+    "decor": {"texture": "", "color": "panel"}
+  }
+}

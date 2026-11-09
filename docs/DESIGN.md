@@ -23,9 +23,9 @@ The game uses its own name, characters, maps and art. It reuses the genre and me
 **Core rules (for the GDD):**
 
 - Each fighter has 100 HP and a jetpack fuel bar that refills while standing on the ground.
-- A fighter that reaches 0 HP respawns after 3 seconds at a random spawn point (in multiplayer).
+- A fighter that reaches 0 HP respawns after 3 seconds at the spawn point farthest from the opponent (in the campaign, farthest from the nearest bot).
 - Weapons are picked up from the map; each has limited ammo and a reload time.
-- In the campaign, failing the mission (dying with no lives left, or the timer running out) restarts the level.
+- In the campaign, failing the mission (dying with no lives left, or the timer running out on a non-survive level) shows Level Results with Retry.
 - Clearing a level saves progress and unlocks the next level.
 
 ## 2. Requirements traceability
@@ -117,8 +117,8 @@ The campaign has 10 levels across 3 maps. Only Level 1 is unlocked at first inst
 ### Clear, fail and star rules
 
 - Clear: complete the mission objective. The game awards 1 star.
-- 2 stars: clear with 1 death or fewer. 3 stars: clear with 0 deaths and more than 25% of the time left.
-- Fail: time runs out, or the player loses all 3 lives. The level restarts; nothing is unlocked.
+- 2 stars: clear with 1 death or fewer. 3 stars: clear with 0 deaths and more than 25% of the time left. On survive levels and levels with no time limit, the time condition counts as met.
+- Fail: time runs out (except on survive levels, where the timer running out is the win), or the player loses all 3 lives. Level Results offers Retry; nothing is unlocked.
 - Replaying a cleared level keeps the best star count.
 
 ### Difficulty curve
@@ -134,7 +134,7 @@ The campaign has 10 levels across 3 maps. Only Level 1 is unlocked at first inst
 
 1. LevelManager loads levels.json (the table above as data) at start-up.
 2. On mission success, GameState calls ProgressService.complete_level(id, stars, time).
-3. ProgressService saves the best stars and sets unlocked_level = max(unlocked_level, id + 1).
+3. ProgressService saves the best stars and sets unlocked_level = max(unlocked_level, min(id + 1, level_count)).
 4. The Level Select screen draws a lock icon on every level whose id is greater than unlocked_level. Tapping a locked level shows "Clear Level N first."
 
 ## 5. Multiplayer (offline and online)
@@ -144,7 +144,7 @@ Both modes share one networking layer: Godot's high-level multiplayer API (Multi
 | | Offline (local) | Online (internet) |
 | --- | --- | --- |
 | Connection | Same Wi-Fi or one phone's mobile hotspot | Any internet (Wi-Fi or mobile data) |
-| Transport | ENetMultiplayerPeer (UDP), port 7777 | WebSocketMultiplayerPeer through a relay server |
+| Transport | ENetMultiplayerPeer (UDP), port 7777 | RelayMultiplayerPeer (custom MultiplayerPeerExtension over WebSocketPeer) through a relay server |
 | Finding a match | Host taps Host LAN; joiner sees it via UDP broadcast on port 7778, or types the host IP | Host taps Create Room and gets a 6-character code; joiner types the code |
 | Who is authority | Host phone | Host phone (the relay only forwards packets) |
 | Players | 2 (stretch: up to 4) | 2 (stretch: up to 4) |
@@ -152,7 +152,7 @@ Both modes share one networking layer: Godot's high-level multiplayer API (Multi
 
 ### Match rules (both modes)
 
-- Deathmatch, 1 vs 1. First to 10 kills, or most kills after 5:00, wins.
+- Deathmatch, 1 vs 1. First to 10 kills, or most kills after 5:00, wins. A tie at 5:00 is a draw and changes neither win nor loss stats.
 - Map choice: Outpost always; Canyon and Skyforge once unlocked in the campaign on the host phone.
 - Respawn after 3 s at the spawn point farthest from the opponent.
 
@@ -168,7 +168,7 @@ Both modes share one networking layer: Godot's high-level multiplayer API (Multi
 ### Connection handling
 
 - A join attempt times out after 10 s with the message "Could not reach host."
-- If a player disconnects mid-match, the other player wins by forfeit and returns to the lobby.
+- If a player disconnects mid-match, the other player wins by forfeit, sees Match Results and returns to the lobby. The disconnected phone shows "Connection lost" and returns to the Multiplayer screen.
 - Both phones must run the same game version. The host sends its version on connect and rejects a mismatch.
 
 ## 6. Technical architecture
@@ -196,15 +196,24 @@ The campaign never touches the network. Offline matches link two phones directly
 sky-skirmish/
   project.godot
   autoload/      GameState.gd, LevelManager.gd, ProgressService.gd,
-                 NetworkManager.gd, AudioManager.gd
+                 NetworkManager.gd, AudioManager.gd, Settings.gd
   scenes/
-    ui/          MainMenu, LevelSelect, Lobby, HUD, Results, Settings
+    ui/          Splash, MainMenu, LevelSelect, MultiplayerMenu, LanLobby,
+                 OnlineLobby, HUD, LevelResults, MatchResults, Settings, Credits
     game/        Match.tscn, Player.tscn, Bot.tscn, Projectile.tscn
     maps/        Outpost.tscn, Canyon.tscn, Skyforge.tscn
-  scripts/weapons/  Weapon.gd (base), Pistol.gd, Rifle.gd, ...
-  data/          levels.json, weapons.json
-  assets/        sprites/, tiles/, audio/, fonts/
+  scripts/
+    core/        Tuning.gd, DataFile.gd, AssetMap.gd
+    input/       PlayerInput.gd, InputProvider.gd and its implementations
+    player/      Player.gd, PlayerMotor.gd, FuelTank.gd, PlayerVisual.gd
+    game/        GameMap.gd, AimCamera.gd
+    ui/          VirtualStick.gd, TouchActionButton.gd, TouchControls.gd
+    weapons/     Weapon.gd (base), Pistol.gd, Rifle.gd, ...
+  data/          tuning.json, levels.json, weapons.json, difficulty.json, maps/
+  assets/        asset_map.json, theme/, sprites/, tiles/, audio/, fonts/
   server/        relay.js, package.json
+  tests/         GUT unit and integration tests
+  tools/         run_tests.sh, run_local_mp.sh, export_android.sh
 ```
 
 ### Key classes
@@ -213,11 +222,12 @@ sky-skirmish/
 | --- | --- |
 | Player (CharacterBody2D) | Movement, jetpack, health, holds 2 weapons; reads input locally or from the network |
 | Weapon (base class) | Fire rate, ammo, reload, spawns Projectile; subclasses set stats from weapons.json |
-| Bot (extends Player) | AI state machine that writes the same input struct a human produces |
+| Bot (extends Player) | A Player with a BotBrain attached; BotBrain is the AI state machine that writes the same input struct a human produces |
 | Match | Spawns players, tracks score and timer, decides win/lose, emits match_ended |
 | LevelManager | Loads levels.json, builds the mission for a level, checks the objective |
 | ProgressService | Reads and writes save.json, unlocks levels, weapons and maps |
-| NetworkManager | Hosts or joins (ENet or WebSocket), room codes, version check, disconnects |
+| NetworkManager | Hosts or joins (ENet or relay), room codes, version check, disconnects |
+| Settings | Live player preferences; ProgressService persists them |
 
 Because Bot produces the same input struct as a human, the same Player code serves the campaign, local multiplayer and online multiplayer.
 
@@ -237,10 +247,13 @@ All player progress is stored on the phone, so the campaign works with no intern
     "2": {"stars": 2, "best_time": 132.5},
     "3": {"stars": 1, "best_time": 90.0}
   },
-  "unlocked_weapons": ["pistol", "rifle", "shotgun"],
+  "unlocked_weapons": ["pistol", "rifle"],
   "unlocked_maps": ["outpost"],
+  "unlocked_skins": [],
+  "selected_skin": "",
   "stats": {"mp_wins": 5, "mp_losses": 3, "total_kills": 211},
-  "settings": {"music": 0.7, "sfx": 0.9, "aim_assist": true, "stick_size": 1.0}
+  "settings": {"music": 0.7, "sfx": 0.9, "aim_assist": true, "stick_size": 1.0},
+  "hash": "<salted SHA-256 of the other fields>"
 }
 ```
 
@@ -260,7 +273,8 @@ One entry per level with id, map, mission_type, target, bot_count, difficulty, t
 | host_socket | connection id | Host phone |
 | guest_socket | connection id | Joining phone |
 | game_version | 1.0.3 | Reject mismatched versions |
-| created_at | timestamp | Delete rooms idle for 10 minutes |
+| created_at | timestamp | Diagnostics |
+| last_activity | timestamp | Delete rooms idle for 10 minutes |
 
 ## 8. UI/UX screens and flow
 
@@ -312,9 +326,9 @@ Each week ends with a tagged Git release (v0.1 to v1.0) and an APK installed on 
 | T4 | Close and reopen the app after clearing Level 3 | Levels 1–4 unlocked, stars kept |
 | T5 | Tap a locked level | "Clear Level N first" message; level does not start |
 | T6 | Host LAN on phone A, join from phone B on the same hotspot, no internet | Match starts; both see each other move |
-| T7 | Create online room, join with the code on mobile data | Match starts within 10 s |
+| T7 | Create online room, join with the code on mobile data (relay already awake) | Match starts within 10 s |
 | T8 | Join with a wrong room code | "Room not found" message |
-| T9 | Turn off Wi-Fi on one phone mid-match | Other player wins by forfeit; both return to menu |
+| T9 | Turn off Wi-Fi on one phone mid-match | Other player wins by forfeit and returns to the lobby; the dropped phone shows "Connection lost" and returns to the Multiplayer screen |
 | T10 | Different game versions try to connect | Connection rejected with "Update required" |
 
 ### Structured playtests
@@ -342,3 +356,25 @@ The team also observes silently and records deaths per level, time to clear, and
 - [ ] Playtest forms, summary of findings and change log for both rounds
 - [ ] Demo video (2–3 min): level unlock, offline LAN match, online match
 - [ ] Credits list for all CC0/third-party assets
+
+## 10. Agreed clarifications
+
+These fill gaps in the sections above.
+
+### Combat and controls
+
+- Reload times, reserve ammo, projectile speed, range, spread, melee range and cooldown, grenade throw speed, rocket self-damage and crouch numbers are starting values in `data/weapons.json` and `data/tuning.json`. Splash damage falls off linearly with distance.
+- Right stick: below 70% of the radius it aims only. Past 70% it auto-fires. A quick flick and release fires one shot.
+- Jetpack fuel does not refill while the jet control is held, which prevents stutter-hopping on an empty tank.
+- Bots regenerate health with the same Player code as humans.
+
+### Missions
+
+- `bot_count` is the number of bots alive at once. Bots respawn after 3 s, except in gauntlet waves. The Level 8 escorts respawn.
+- Level 6's "max 2 deaths" is a `max_deaths` field. It matches the 3-lives rule today and can be tuned separately.
+- Capture time is cumulative and pauses while the zone is empty or contested.
+
+### Scope
+
+- The 4-player stretch goal is not planned.
+- Pages 2–39 of the lab handout were not available, so rubric rows may be missing from Section 2.

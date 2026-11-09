@@ -1,0 +1,41 @@
+{
+  "player": {
+    "gravity": 980.0,
+    "walk_speed": 220.0,
+    "ground_accel": 2200.0,
+    "air_accel": 1100.0,
+    "jet_accel": 1400.0,
+    "jet_max_up_speed": 360.0,
+    "max_fall_speed": 900.0,
+    "crouch_speed_factor": 0.45,
+    "body_radius": 16.0,
+    "stand_height": 72.0,
+    "crouch_height": 44.0,
+    "aim_origin_height_ratio": 0.6
+  },
+  "fuel": {
+    "capacity": 100.0,
+    "drain_per_second": 35.0,
+    "refill_per_second": 50.0,
+    "refill_delay": 0.5
+  },
+  "camera": {
+    "aim_lead": 140.0,
+    "follow_rate": 8.0
+  },
+  "touch": {
+    "stick_radius": 110.0,
+    "capture_factor": 1.6,
+    "stick_inset_margin": 80.0,
+    "dead_zone": 0.18,
+    "full_speed_at": 0.7,
+    "jet_threshold": 0.5,
+    "crouch_threshold": 0.6,
+    "fire_threshold": 0.7,
+    "button_radius": 52.0,
+    "button_gap": 12.0
+  },
+  "map": {
+    "one_way_thickness": 12.0
+  }
+}

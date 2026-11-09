@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/GameMap.gd" id="1"]
+
+[node name="TestMap" type="Node2D"]
+script = ExtResource("1")
+layout_path = "res://data/maps/test.json"
+
+[node name="Decor" type="TileMapLayer" parent="."]
+
+[node name="Solid" type="TileMapLayer" parent="."]
+
+[node name="OneWay" type="TileMapLayer" parent="."]
