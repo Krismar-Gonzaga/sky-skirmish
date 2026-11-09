@@ -18,6 +18,7 @@ signal item_taken(at: Vector2)
 const ProjectileScene := preload("res://scenes/game/Projectile.tscn")
 const GrenadeScene := preload("res://scenes/game/Grenade.tscn")
 const PickupScene := preload("res://scenes/game/Pickup.tscn")
+const NO_TEAM := -1
 
 ## Campaign missions turn this off once a life count runs out.
 var respawn_enabled: bool = true
@@ -51,6 +52,10 @@ func register_fighter(fighter: Player) -> void:
 	fighter.grenade_thrown.connect(_on_grenade_thrown)
 	fighter.melee_swung.connect(_on_melee_swung)
 	fighter.died.connect(_on_fighter_died)
+
+
+func unregister_fighter(fighter: Player) -> void:
+	fighters.erase(fighter)
 
 
 func _add_pickup(kind: Pickup.Kind, at: Vector2, weapon_id: String, pool: Array[String]) -> void:
@@ -89,7 +94,7 @@ func _on_projectile_struck(projectile: Projectile, at: Vector2, collider: Object
 	else:
 		var victim: Player = collider as Player
 		if victim != null:
-			_deal(victim, projectile.weapon_damage, projectile.shooter)
+			_deal(victim, projectile.weapon_damage, _still_present(projectile.shooter))
 		round_impacted.emit(at, victim != null)
 	_release_projectile(projectile)
 
@@ -102,7 +107,7 @@ func _on_projectile_expired(projectile: Projectile) -> void:
 
 func _explode_projectile(projectile: Projectile, at: Vector2) -> void:
 	_explode(at, projectile.splash_radius, projectile.weapon_damage,
-			projectile.shooter, projectile.self_damage_factor)
+			_still_present(projectile.shooter), projectile.self_damage_factor)
 
 
 func _on_grenade_thrown(thrower: Player, origin: Vector2, direction: Vector2) -> void:
@@ -117,13 +122,21 @@ func _on_grenade_thrown(thrower: Player, origin: Vector2, direction: Vector2) ->
 func _on_grenade_detonated(grenade: FragGrenade) -> void:
 	var stats: Dictionary = WeaponCatalog.grenade()
 	_explode(grenade.global_position, stats["splash_radius"], stats["damage"],
-			grenade.thrower, stats["self_damage_factor"])
+			_still_present(grenade.thrower), stats["self_damage_factor"])
 	grenade.queue_free()
 
 
+## A shot can outlive its owner, for example after a disconnect.
+## Untyped because a freed object cannot be passed as a typed argument.
+func _still_present(fighter: Variant) -> Player:
+	return fighter as Player if is_instance_valid(fighter) else null
+
+
+## A null attacker means the owner left the match; its blast hurts everyone.
 func _explode(at: Vector2, radius: float, damage: float, attacker: Player, self_factor: float) -> void:
+	var attacker_team: int = attacker.team if attacker != null else NO_TEAM
 	for fighter: Player in fighters:
-		if fighter.is_dead or (fighter != attacker and fighter.team == attacker.team):
+		if fighter.is_dead or (fighter != attacker and fighter.team == attacker_team):
 			continue
 		var amount: float = Splash.damage_at(fighter.distance_from(at), radius, damage)
 		if fighter == attacker:

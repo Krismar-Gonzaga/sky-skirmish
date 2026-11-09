@@ -23,6 +23,17 @@ func _ready() -> void:
 		_voices.append(voice)
 
 
+## A sound still playing at quit would be reported by Godot as a leak.
+func _exit_tree() -> void:
+	for voice: AudioStreamPlayer in _voices:
+		voice.stop()
+		voice.stream = null
+	for key: String in _loop_players:
+		var loop_player: AudioStreamPlayer = _loop_players[key]
+		loop_player.stop()
+		loop_player.stream = null
+
+
 func play(key: String) -> void:
 	if not _streams.has(key):
 		push_error("Unknown sound key: %s" % key)

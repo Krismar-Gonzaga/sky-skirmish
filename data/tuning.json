@@ -55,5 +55,44 @@
   },
   "map": {
     "one_way_thickness": 12.0
+  },
+  "bot": {
+    "retreat_below": 0.3,
+    "recover_at": 0.6,
+    "sight_range": 1100.0,
+    "memory_time": 2.5,
+    "reacquire_time": 0.4,
+    "think_interval": 0.12,
+    "repath_interval": 0.6,
+    "aim_refresh": 0.3,
+    "lead_factor": 0.8,
+    "preferred_range": 320.0,
+    "range_use_factor": 0.85,
+    "strafe_interval": 1.2,
+    "dodge_chance": 0.35,
+    "dodge_time": 0.4,
+    "dodge_min_fuel": 0.6,
+    "patrol_hunt_chance": 0.5,
+    "grenade_interval_min": 5.0,
+    "grenade_interval_max": 10.0,
+    "grenade_min_range": 200.0,
+    "grenade_max_range": 450.0,
+    "grenade_lift": 0.35,
+    "melee_range": 60.0,
+    "stuck_check_interval": 1.0,
+    "stuck_distance": 20.0,
+    "escape_time": 0.7
+  },
+  "bot_navigation": {
+    "air_cost": 1.5,
+    "wall_cost": 2.5,
+    "arrival_radius": 40.0,
+    "climb_margin": 10.0,
+    "vertical_gain": 4.0,
+    "max_climb_speed": 360.0,
+    "max_descent_speed": 420.0,
+    "horizontal_span": 32.0,
+    "low_fuel": 0.12,
+    "resume_fuel": 0.95
   }
 }

@@ -224,6 +224,29 @@ func test_projectiles_are_reused() -> void:
 	assert_lt(count, 5)
 
 
+func test_grenade_survives_its_thrower_leaving() -> void:
+	await wait_physics_frames(3, "")
+	target.global_position = shooter.global_position + Vector2(40.0, 0.0)
+	controls.input.aim = Vector2(0.1, 1.0).normalized()
+	controls.input.grenade = true
+	await wait_physics_frames(2, "")
+	arena.unregister_fighter(shooter)
+	shooter.queue_free()
+	await wait_physics_frames(170, "")
+	assert_lt(target.health.current, 100.0)
+
+
+func test_rocket_survives_its_shooter_leaving() -> void:
+	await wait_physics_frames(3, "")
+	shooter.give_weapon("rocket")
+	controls.input.fire = true
+	await wait_physics_frames(1, "")
+	arena.unregister_fighter(shooter)
+	shooter.queue_free()
+	await wait_physics_frames(40, "")
+	assert_lt(target.health.current, 100.0)
+
+
 func test_sniper_zooms_out_only_while_aiming() -> void:
 	var camera := AimCamera.new()
 	add_child_autofree(camera)

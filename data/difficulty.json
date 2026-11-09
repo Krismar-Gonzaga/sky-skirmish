@@ -1,0 +1,6 @@
+{
+  "easy": {"hp": 60.0, "aim_error_degrees": 15.0, "reaction_time": 0.8},
+  "normal": {"hp": 80.0, "aim_error_degrees": 10.0, "reaction_time": 0.5},
+  "hard": {"hp": 100.0, "aim_error_degrees": 6.0, "reaction_time": 0.35},
+  "expert": {"hp": 100.0, "aim_error_degrees": 3.0, "reaction_time": 0.25}
+}

@@ -209,6 +209,7 @@ sky-skirmish/
     game/        Arena.gd, GameMap.gd, AimCamera.gd, CombatEffects.gd, Pickup.gd
     ui/          Hud.gd, VirtualStick.gd, TouchActionButton.gd, TouchControls.gd
     weapons/     Weapon.gd (base), Pistol.gd, Rifle.gd, Loadout.gd, Projectile.gd, ...
+    bots/        Bot.gd, BotBrain.gd, BotDecision.gd, JetNavGraph.gd, PathFollower.gd
   data/          tuning.json, levels.json, weapons.json, difficulty.json, maps/
   assets/        asset_map.json, theme/, sprites/, tiles/, audio/, fonts/
   server/        relay.js, package.json
@@ -379,7 +380,19 @@ These fill gaps in the sections above.
 - Level 6's "max 2 deaths" is a `max_deaths` field. It matches the 3-lives rule today and can be tuned separately.
 - Capture time is cumulative and pauses while the zone is empty or contested.
 
+### Progress and modes
+
+- Campaign crates drop only unlocked weapons. Multiplayer crates drop all weapons, so a fresh host still gets a real match.
+- Replaying campaign levels serves as the "offline practice" against bots from Section 3. There is no separate practice screen.
+- The "Sky Ace" skin is a toggle in Settings, shown once earned.
+
+### Bots
+
+- Navigation is a directed A* graph over map tiles. A bot can fly up through a one-way platform but must walk off its edge to go down, matching the player's rules.
+- Bots fire only after their difficulty's reaction time has passed since they spotted a target.
+
 ### Scope
 
+- The relay targets Node 24 LTS, because Node 20 reached end-of-life in April 2026. Its code stays compatible with Node 20.
 - The 4-player stretch goal is not planned.
 - Pages 2–39 of the lab handout were not available, so rubric rows may be missing from Section 2.

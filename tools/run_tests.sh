@@ -31,7 +31,9 @@ fi
 echo "none"
 
 echo "== GUT =="
-"$GODOT" --headless --path . -s addons/gut/gut_cmdln.gd \
+# Fixed FPS runs simulated time as fast as the CPU allows: long bot soak tests
+# then take seconds, and each frame is exactly one physics step.
+"$GODOT" --headless --path . --fixed-fps 60 -s addons/gut/gut_cmdln.gd \
 	-gdir=res://tests -ginclude_subdirs -gexit
 gut_status=$?
 if [ "$gut_status" -ne 0 ]; then

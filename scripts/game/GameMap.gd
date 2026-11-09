@@ -55,6 +55,40 @@ func get_bounds() -> Rect2:
 	return Rect2(Vector2(-border * _tile_size), Vector2((_size_in_tiles + border * 2) * _tile_size))
 
 
+func size_in_tiles() -> Vector2i:
+	return _size_in_tiles
+
+
+func tile_size() -> int:
+	return _tile_size
+
+
+func solid_cells() -> Dictionary:
+	return _cells_of(_solid)
+
+
+func one_way_cells() -> Dictionary:
+	return _cells_of(_one_way)
+
+
+## Places worth visiting: spawns, crates and health packs, at feet height.
+func patrol_points() -> Array[Vector2]:
+	var points: Array[Vector2] = spawn_points.duplicate()
+	for crate: Dictionary in crates:
+		var at: Vector2 = crate["position"]
+		points.append(at + Vector2.DOWN * PICKUP_HEIGHT)
+	for pack: Vector2 in health_packs:
+		points.append(pack + Vector2.DOWN * PICKUP_HEIGHT)
+	return points
+
+
+func _cells_of(layer: TileMapLayer) -> Dictionary:
+	var cells: Dictionary = {}
+	for cell: Vector2i in layer.get_used_cells():
+		cells[cell] = true
+	return cells
+
+
 func _read_points(layout: Dictionary) -> void:
 	for spawn: Array in layout["spawns"]:
 		spawn_points.append(_feet_position(_cell(spawn)))
