@@ -9,6 +9,8 @@ const SPIN_SPEED := 9.0
 const MIN_AUDIBLE_BOUNCE_SPEED := 90.0
 
 var thrower: Player
+## On a client this copy only shows the throw; the host's grenade does the damage.
+var cosmetic: bool = false
 
 var _fuse_left: float = 0.0
 var _gravity: float = 0.0

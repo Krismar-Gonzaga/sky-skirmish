@@ -4,16 +4,17 @@ extends Node2D
 ## pickups and respawns. Signals report every event, so visuals and sound stay
 ## out of here and multiplayer can forward the same events to clients.
 
-signal shots_fired(origin: Vector2, direction: Vector2, weapon_id: String)
+signal shots_fired(origin: Vector2, directions: Array[Vector2], weapon_id: String)
 signal round_impacted(at: Vector2, on_fighter: bool)
 signal exploded(at: Vector2, radius: float)
 signal fighter_damaged(victim: Player, amount: float)
 signal fighter_killed(victim: Player, killer: Player)
 signal fighter_respawned(fighter: Player)
-signal grenade_launched(at: Vector2)
+signal grenade_launched(at: Vector2, direction: Vector2)
 signal grenade_bounced(at: Vector2)
 signal melee_swung(at: Vector2)
 signal item_taken(at: Vector2)
+signal pickup_changed(index: int, available: bool, weapon_id: String)
 
 const ProjectileScene := preload("res://scenes/game/Projectile.tscn")
 const GrenadeScene := preload("res://scenes/game/Grenade.tscn")
@@ -27,8 +28,10 @@ var fighters: Array[Player] = []
 
 var _spawn_points: Array[Vector2] = []
 var _idle_projectiles: Array[Projectile] = []
+var _pickups: Array[Pickup] = []
 var _knockback: float = 0.0
 var _health_pack: float = 0.0
+var _remote: bool = false
 
 
 func _ready() -> void:
@@ -38,8 +41,10 @@ func _ready() -> void:
 
 
 ## crate_pool lists the weapons that random crates may contain.
-func setup(map: GameMap, crate_pool: Array[String]) -> void:
+## remote is true on a client, where the host decides everything.
+func setup(map: GameMap, crate_pool: Array[String], remote: bool = false) -> void:
 	_spawn_points = map.spawn_points
+	_remote = remote
 	for crate: Dictionary in map.crates:
 		# Early levels have no unlocked weapons to put in a random crate.
 		if not (crate["weapon"] as String).is_empty() or not crate_pool.is_empty():
@@ -50,6 +55,7 @@ func setup(map: GameMap, crate_pool: Array[String]) -> void:
 
 ## Removes everything tied to the current map, ready for setup() with a new one.
 func clear_world() -> void:
+	_pickups.clear()
 	for child: Node in get_children():
 		if child is Pickup or child is FragGrenade:
 			child.queue_free()
@@ -65,23 +71,64 @@ func register_fighter(fighter: Player) -> void:
 	fighter.died.connect(_on_fighter_died)
 
 
+## A client knows about a fighter without simulating any of its combat.
+func track_fighter(fighter: Player) -> void:
+	fighters.append(fighter)
+
+
 func unregister_fighter(fighter: Player) -> void:
 	fighters.erase(fighter)
 
 
+## [[index, available, weapon_id], ...] so a client can match the host.
+func pickup_states() -> Array:
+	var states: Array = []
+	for i: int in range(_pickups.size()):
+		states.append([i, _pickups[i].is_available(), _pickups[i].weapon_id])
+	return states
+
+
+func apply_remote_pickup(index: int, available: bool, weapon_id: String) -> void:
+	if index < _pickups.size():
+		_pickups[index].apply_remote_state(available, weapon_id)
+
+
+func show_remote_shots(origin: Vector2, directions: PackedVector2Array, weapon_id: String) -> void:
+	var weapon: Weapon = WeaponCatalog.create(weapon_id)
+	var typed_directions: Array[Vector2] = []
+	for direction: Vector2 in directions:
+		_acquire_projectile().launch_cosmetic(origin, direction, weapon)
+		typed_directions.append(direction)
+	shots_fired.emit(origin, typed_directions, weapon_id)
+
+
+func show_remote_grenade(at: Vector2, direction: Vector2) -> void:
+	var grenade: FragGrenade = GrenadeScene.instantiate() as FragGrenade
+	grenade.cosmetic = true
+	add_child(grenade)
+	grenade.launch(at, direction, null)
+	grenade.detonated.connect(_on_grenade_detonated)
+	grenade_launched.emit(at, direction)
+
+
 func _add_pickup(kind: Pickup.Kind, at: Vector2, weapon_id: String, pool: Array[String]) -> void:
 	var pickup: Pickup = PickupScene.instantiate() as Pickup
+	pickup.remote_controlled = _remote
 	add_child(pickup)
 	pickup.global_position = at
 	pickup.setup(kind, weapon_id, pool)
+	var index: int = _pickups.size()
+	_pickups.append(pickup)
 	pickup.touched.connect(_on_pickup_touched)
+	pickup.state_changed.connect(func(available: bool) -> void:
+		pickup_changed.emit(index, available, pickup.weapon_id))
 
 
 func _on_fired(shooter: Player, weapon: Weapon, origin: Vector2, directions: Array[Vector2]) -> void:
 	var excluded: Array[RID] = _team_rids(shooter.team)
 	for direction: Vector2 in directions:
 		_acquire_projectile().launch(origin, direction, weapon, shooter, excluded)
-	shots_fired.emit(origin, directions[0], weapon.id)
+	shots_fired.emit(origin, directions, weapon.id)
 
 
 func _acquire_projectile() -> Projectile:
@@ -100,6 +147,9 @@ func _release_projectile(projectile: Projectile) -> void:
 
 
 func _on_projectile_struck(projectile: Projectile, at: Vector2, collider: Object) -> void:
+	if projectile.cosmetic:
+		_release_projectile(projectile)
+		return
 	if projectile.splash_radius > 0.0:
 		_explode_projectile(projectile, at)
 	else:
@@ -111,7 +161,7 @@ func _on_projectile_struck(projectile: Projectile, at: Vector2, collider: Object
 
 
 func _on_projectile_expired(projectile: Projectile) -> void:
-	if projectile.splash_radius > 0.0:
+	if not projectile.cosmetic and projectile.splash_radius > 0.0:
 		_explode_projectile(projectile, projectile.global_position)
 	_release_projectile(projectile)
 
@@ -127,13 +177,14 @@ func _on_grenade_thrown(thrower: Player, origin: Vector2, direction: Vector2) ->
 	grenade.launch(origin, direction, thrower)
 	grenade.detonated.connect(_on_grenade_detonated)
 	grenade.bounced.connect(func(at: Vector2) -> void: grenade_bounced.emit(at))
-	grenade_launched.emit(origin)
+	grenade_launched.emit(origin, direction)
 
 
 func _on_grenade_detonated(grenade: FragGrenade) -> void:
-	var stats: Dictionary = WeaponCatalog.grenade()
-	_explode(grenade.global_position, stats["splash_radius"], stats["damage"],
-			_still_present(grenade.thrower), stats["self_damage_factor"])
+	if not grenade.cosmetic:
+		var stats: Dictionary = WeaponCatalog.grenade()
+		_explode(grenade.global_position, stats["splash_radius"], stats["damage"],
+				_still_present(grenade.thrower), stats["self_damage_factor"])
 	grenade.queue_free()
 
 

@@ -4,6 +4,7 @@ extends Area2D
 ## Arena decides what a touch does, so hosts stay in charge in multiplayer.
 
 signal touched(pickup: Pickup, fighter: Player)
+signal state_changed(available: bool)
 
 enum Kind { WEAPON, HEALTH }
 
@@ -13,6 +14,8 @@ const LABEL_WIDTH := 80.0
 
 var kind: Kind = Kind.WEAPON
 var weapon_id: String = ""
+## True on a client: the host says when this is taken or back.
+var remote_controlled: bool = false
 
 var _fixed_weapon: bool = false
 var _weapon_pool: Array[String] = []
@@ -55,15 +58,27 @@ func consume() -> void:
 	_available = false
 	_respawn_left = _respawn_time
 	visible = false
+	state_changed.emit(false)
+
+
+func apply_remote_state(available: bool, remote_weapon: String) -> void:
+	_available = available
+	visible = available
+	if kind == Kind.WEAPON and not remote_weapon.is_empty():
+		weapon_id = remote_weapon
+		_label.text = str(WeaponCatalog.stats(weapon_id)["display_name"])
 
 
 func _physics_process(delta: float) -> void:
+	if remote_controlled:
+		return
 	if not _available:
 		_respawn_left -= delta
 		if _respawn_left <= 0.0:
 			_prepare_contents()
 			_available = true
 			visible = true
+			state_changed.emit(true)
 		return
 	# Polling, not body_entered: someone already standing here when the crate
 	# comes back must still collect it.

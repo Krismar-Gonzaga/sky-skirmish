@@ -242,6 +242,62 @@ func test_match_results_show_a_draw() -> void:
 	assert_not_null(screen.find_child("Leave", true, false))
 
 
+func test_multiplayer_menu_shows_a_notice_once() -> void:
+	GameState.notice = "Connection lost"
+	var screen: Control = _open(GameState.MULTIPLAYER_MENU)
+	var shown: bool = false
+	for label: Node in screen.find_children("*", "Label", true, false):
+		shown = shown or (label as Label).text == "Connection lost"
+	assert_true(shown)
+	assert_eq(GameState.notice, "")
+
+
+func test_lan_lobby_rejects_a_bad_address() -> void:
+	var screen: LanLobby = _open(GameState.LAN_LOBBY) as LanLobby
+	screen.join_address("not an address")
+	assert_string_contains(screen._status.text, "Enter an address")
+	assert_false(NetworkManager.is_active())
+
+
+func test_lan_lobby_join_panel_opens_with_manual_entry() -> void:
+	var screen: LanLobby = _open(GameState.LAN_LOBBY) as LanLobby
+	_button(screen, "Join").pressed.emit()
+	assert_true(screen._join_panel.visible)
+	assert_not_null(screen._address_field)
+
+
+func test_locked_maps_cannot_be_chosen_by_the_host() -> void:
+	var screen: LanLobby = _open(GameState.LAN_LOBBY) as LanLobby
+	assert_false((screen._map_buttons["outpost"] as Button).disabled)
+	assert_true((screen._map_buttons["canyon"] as Button).disabled)
+	assert_true((screen._map_buttons["skyforge"] as Button).disabled)
+
+
+func test_earned_maps_can_be_chosen_by_the_host() -> void:
+	ProgressService.complete_level(5, 1, 100.0)
+	var screen: LanLobby = _open(GameState.LAN_LOBBY) as LanLobby
+	assert_false((screen._map_buttons["canyon"] as Button).disabled)
+	assert_true((screen._map_buttons["skyforge"] as Button).disabled)
+
+
+func test_rematch_needs_an_opponent() -> void:
+	GameState.last_match_result = {"winner": "Ace", "forfeit": true, "players": []}
+	var screen: Control = _open(GameState.MATCH_RESULTS)
+	assert_true(_button(screen, "Rematch").disabled)
+
+
+func test_leaving_after_a_forfeit_returns_to_the_lobby() -> void:
+	GameState.last_match_result = {"winner": "Ace", "forfeit": true, "players": []}
+	_assert_leads_to(GameState.MATCH_RESULTS, "Leave", GameState.LAN_LOBBY)
+
+
+func test_multiplayer_pause_menu_has_no_retry() -> void:
+	var game: Match = MatchScene.instantiate() as Match
+	add_child_autofree(game)
+	game.pause_menu.use_multiplayer_layout()
+	assert_false((game.pause_menu.find_child("Retry", true, false) as Button).visible)
+
+
 func _started_match() -> Match:
 	var game: Match = MatchScene.instantiate() as Match
 	add_child_autofree(game)

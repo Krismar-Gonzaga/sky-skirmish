@@ -4,10 +4,14 @@ extends MenuScreen
 
 const WINNER_FONT_SIZE := 56
 
+var _rematch_button: Button
+var _status: Label
+
 
 func _build() -> void:
-	back_target = GameState.MULTIPLAYER_MENU
 	var result: Dictionary = GameState.last_match_result
+	# After a forfeit the survivor goes straight back to the lobby to host again.
+	back_target = GameState.LAN_LOBBY if result.get("forfeit", false) else GameState.MULTIPLAYER_MENU
 	var column: VBoxContainer = make_centred_column()
 	add_label(column, _heading_for(result), WINNER_FONT_SIZE, "amber")
 	for entry: Dictionary in result.get("players", []):
@@ -17,8 +21,34 @@ func _build() -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", COLUMN_SPACING)
 	column.add_child(row)
-	add_button(row, "Rematch", func() -> void: pass).disabled = true
+	_rematch_button = add_button(row, "Rematch", _on_rematch_pressed)
+	_rematch_button.disabled = not NetworkManager.has_opponent()
 	add_button(row, "Leave", go_back)
+	_status = add_label(column, "", BODY_FONT_SIZE, "muted")
+	NetworkManager.peer_left.connect(_on_opponent_gone.unbind(1))
+	NetworkManager.connection_lost.connect(_on_opponent_gone)
+	NetworkManager.rematch_votes_changed.connect(_on_votes_changed)
+
+
+func go_back() -> void:
+	NetworkManager.leave()
+	super()
+
+
+func _on_rematch_pressed() -> void:
+	_rematch_button.disabled = true
+	_status.text = "Waiting for the other player..."
+	NetworkManager.vote_rematch()
+
+
+func _on_votes_changed() -> void:
+	if NetworkManager.rematch_vote_count() > 0 and not _rematch_button.disabled:
+		_status.text = "The other player wants a rematch."
+
+
+func _on_opponent_gone() -> void:
+	_rematch_button.disabled = true
+	_status.text = "The other player left."
 
 
 func _heading_for(result: Dictionary) -> String:

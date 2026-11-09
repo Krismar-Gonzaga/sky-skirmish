@@ -23,8 +23,8 @@ LevelManager="*res://autoload/LevelManager.gd"
 ProgressService="*res://autoload/ProgressService.gd"
 AudioManager="*res://autoload/AudioManager.gd"
 Settings="*res://autoload/Settings.gd"
-GameState="*res://autoload/GameState.gd"
 NetworkManager="*res://autoload/NetworkManager.gd"
+GameState="*res://autoload/GameState.gd"
 
 [debug]
 

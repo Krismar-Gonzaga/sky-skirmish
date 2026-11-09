@@ -39,7 +39,7 @@ func bind(arena: Arena, camera: AimCamera, local_player: Player) -> void:
 	arena.fighter_damaged.connect(_on_fighter_damaged)
 	arena.fighter_killed.connect(_on_fighter_killed)
 	arena.fighter_respawned.connect(func(_fighter: Player) -> void: AudioManager.play("respawn"))
-	arena.grenade_launched.connect(func(_at: Vector2) -> void: AudioManager.play("grenade_throw"))
+	arena.grenade_launched.connect(func(_at: Vector2, _direction: Vector2) -> void: AudioManager.play("grenade_throw"))
 	arena.grenade_bounced.connect(func(_at: Vector2) -> void: AudioManager.play("grenade_bounce"))
 	arena.melee_swung.connect(func(_at: Vector2) -> void: AudioManager.play("melee"))
 	arena.item_taken.connect(func(_at: Vector2) -> void: AudioManager.play("pickup"))
@@ -50,8 +50,8 @@ func _physics_process(_delta: float) -> void:
 		AudioManager.set_loop_active("jet", _local_player.is_thrusting)
 
 
-func _on_shots_fired(origin: Vector2, direction: Vector2, weapon_id: String) -> void:
-	_spawn_glow(origin + direction * MUZZLE_DISTANCE, MUZZLE_SIZE, MUZZLE_TIME)
+func _on_shots_fired(origin: Vector2, directions: Array[Vector2], weapon_id: String) -> void:
+	_spawn_glow(origin + directions[0] * MUZZLE_DISTANCE, MUZZLE_SIZE, MUZZLE_TIME)
 	AudioManager.play("shot_%s" % weapon_id)
 
 

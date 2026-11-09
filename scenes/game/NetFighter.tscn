@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/game/Player.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/net/NetFighter.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/net/NetInputState.gd" id="3"]
+
+[node name="NetFighter" instance=ExtResource("1")]
+script = ExtResource("2")
+
+[node name="NetInput" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="StateSync" type="MultiplayerSynchronizer" parent="."]
+root_path = NodePath("..")
+
+[node name="InputSync" type="MultiplayerSynchronizer" parent="."]

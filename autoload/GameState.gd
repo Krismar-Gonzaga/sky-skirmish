@@ -17,11 +17,21 @@ const CREDITS := "res://scenes/ui/Credits.tscn"
 
 const LEVEL_FLAG := "--level="
 const UNLOCK_ALL_FLAG := "--unlock-all"
+const HOST_FLAG := "--host"
+const JOIN_FLAG := "--join="
+const PROFILE_FLAG := "--profile="
 const FADE_LAYER := 200
 const FADE_TIME := 0.18
 
 ## Level the next Match should start, or 0.
 var pending_level: int = 0
+## Map the next 1 vs 1 Match should load, or empty.
+var pending_map: String = ""
+## Message for the Multiplayer screen to show once, such as "Connection lost".
+var notice: String = ""
+## Set by --host and --join=, for testing two instances on one PC.
+var auto_host: bool = false
+var auto_join: String = ""
 ## Set by the --level flag and cleared once used.
 var requested_level: int = 0
 var last_result: Dictionary = {}
@@ -33,21 +43,36 @@ var last_requested_scene: String = ""
 
 var _fade: ColorRect
 var _changing_scene: bool = false
+var _queued_scene: String = ""
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_fade()
+	NetworkManager.match_starting.connect(_on_match_starting)
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with(LEVEL_FLAG):
 			requested_level = argument.trim_prefix(LEVEL_FLAG).to_int()
 		elif argument == UNLOCK_ALL_FLAG:
 			ProgressService.unlock_all_for_session()
+		elif argument == HOST_FLAG:
+			auto_host = true
+		elif argument.begins_with(JOIN_FLAG):
+			auto_join = argument.trim_prefix(JOIN_FLAG)
+		elif argument.begins_with(PROFILE_FLAG):
+			# Two instances on one PC must not share a save file.
+			ProgressService.use_directory("user://profiles".path_join(argument.trim_prefix(PROFILE_FLAG)))
+			ProgressService.load_save()
+			Settings.load_from_save()
 
 
 func go_to(scene_path: String) -> void:
 	last_requested_scene = scene_path
-	if suppress_scene_changes or _changing_scene:
+	if suppress_scene_changes:
+		return
+	if _changing_scene:
+		# Dropping this would strand a player whose match starts during a fade.
+		_queued_scene = scene_path
 		return
 	_changing_scene = true
 	_fade.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -59,6 +84,10 @@ func go_to(scene_path: String) -> void:
 	await _tween_fade(0.0)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_changing_scene = false
+	if not _queued_scene.is_empty():
+		var next_scene: String = _queued_scene
+		_queued_scene = ""
+		go_to(next_scene)
 
 
 func start_level(level_id: int) -> void:
@@ -85,6 +114,25 @@ func record_level_result(result: Dictionary) -> void:
 func finish_level(result: Dictionary) -> void:
 	record_level_result(result)
 	go_to(LEVEL_RESULTS)
+
+
+## Shows a finished 1 vs 1 match. outcome is "win", "loss" or "draw".
+func finish_match(result: Dictionary, outcome: String) -> void:
+	ProgressService.record_mp_result(outcome)
+	last_match_result = result
+	go_to(MATCH_RESULTS)
+
+
+## This device dropped out of a match.
+func report_connection_lost() -> void:
+	ProgressService.record_mp_result("loss")
+	notice = "Connection lost"
+	go_to(MULTIPLAYER_MENU)
+
+
+func _on_match_starting(map_id: String) -> void:
+	pending_map = map_id
+	go_to(MATCH_SCENE)
 
 
 func _tween_fade(alpha: float) -> void:

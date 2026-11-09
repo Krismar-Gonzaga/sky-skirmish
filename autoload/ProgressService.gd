@@ -139,6 +139,14 @@ func add_kills(count: int) -> void:
 	save()
 
 
+## outcome is "win", "loss" or "draw". A draw changes neither count.
+func record_mp_result(outcome: String) -> void:
+	var key: String = {"win": "mp_wins", "loss": "mp_losses"}.get(outcome, "")
+	if not key.is_empty():
+		data["stats"][key] = int(data["stats"][key]) + 1
+		save()
+
+
 ## For the --unlock-all developer flag. Never written to the save file.
 func unlock_all_for_session() -> void:
 	_unlock_all_this_session = true

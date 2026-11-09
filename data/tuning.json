@@ -61,6 +61,23 @@
     "strength": 0.6,
     "range": 900.0
   },
+  "deathmatch": {
+    "kill_limit": 10,
+    "time_limit": 300.0
+  },
+  "net": {
+    "lan_port": 7777,
+    "discovery_port": 7778,
+    "discovery_interval": 1.0,
+    "host_expiry": 4.0,
+    "join_timeout": 10.0,
+    "peer_timeout_min_ms": 3000,
+    "peer_timeout_max_ms": 6000,
+    "state_interval": 0.05,
+    "score_sync_interval": 1.0,
+    "interpolation_delay": 0.1,
+    "own_interpolation_delay": 0.05
+  },
   "campaign": {
     "lives": 3,
     "three_star_time_ratio": 0.25,

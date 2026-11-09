@@ -14,7 +14,9 @@ var shooter: Player
 var weapon_damage: float = 0.0
 var splash_radius: float = 0.0
 var self_damage_factor: float = 0.0
+var cosmetic: bool = false
 
+var _hit_mask: int = 0
 var _direction: Vector2 = Vector2.RIGHT
 var _speed: float = 0.0
 var _distance_left: float = 0.0
@@ -39,9 +41,19 @@ func launch(origin: Vector2, direction: Vector2, weapon: Weapon, owner_player: P
 	_speed = weapon.projectile_speed
 	_distance_left = weapon.max_range
 	_excluded = excluded
+	_hit_mask = PhysicsLayers.WORLD | PhysicsLayers.PLAYERS
+	cosmetic = false
 	_show_visual(weapon.projectile_kind)
 	visible = true
 	set_physics_process(true)
+
+
+## Client-side copy of a host's shot: flies and stops at walls, but hits nothing.
+func launch_cosmetic(origin: Vector2, direction: Vector2, weapon: Weapon) -> void:
+	var nothing_excluded: Array[RID] = []
+	launch(origin, direction, weapon, null, nothing_excluded)
+	_hit_mask = PhysicsLayers.WORLD
+	cosmetic = true
 
 
 func deactivate() -> void:
@@ -55,7 +67,7 @@ func _physics_process(delta: float) -> void:
 	var travel: float = minf(_speed * delta, _distance_left)
 	var destination: Vector2 = global_position + _direction * travel
 	var query := PhysicsRayQueryParameters2D.create(
-			global_position, destination, PhysicsLayers.WORLD | PhysicsLayers.PLAYERS, _excluded)
+			global_position, destination, _hit_mask, _excluded)
 	var hit: Dictionary = get_world_2d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
 		var hit_position: Vector2 = hit["position"]

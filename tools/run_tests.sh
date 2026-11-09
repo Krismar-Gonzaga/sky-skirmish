@@ -40,6 +40,9 @@ if [ "$gut_status" -ne 0 ]; then
 	exit "$gut_status"
 fi
 
+echo "== Network =="
+bash tools/run_net_tests.sh || exit 1
+
 if [ -f server/package.json ]; then
 	echo "== Relay tests =="
 	(cd server && npm test) || exit 1

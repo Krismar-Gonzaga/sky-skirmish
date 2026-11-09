@@ -47,9 +47,10 @@ func _track_touch(touch: InputEventScreenTouch) -> void:
 
 
 func _build_lines() -> PackedStringArray:
+	var ping: int = NetworkManager.ping_ms()
 	var lines := PackedStringArray([
 		"FPS %d" % Engine.get_frames_per_second(),
-		"Ping -",
+		"Ping %s" % ("-" if ping < 0 else "%d ms" % ping),
 		"Peer %d" % multiplayer.get_unique_id(),
 		"Authority %s" % str(multiplayer.is_server()),
 		"Level %s" % level_id,

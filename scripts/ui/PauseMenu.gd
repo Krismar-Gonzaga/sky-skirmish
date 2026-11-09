@@ -28,6 +28,7 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", SPACING)
 	centre.add_child(column)
 	var heading := Label.new()
+	heading.name = "Paused"
 	heading.text = "Paused"
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	heading.add_theme_font_size_override("font_size", HEADING_FONT_SIZE)
@@ -35,6 +36,13 @@ func _ready() -> void:
 	_add_button(column, "Resume", resume_requested)
 	_add_button(column, "Retry", retry_requested)
 	_add_button(column, "Level Select", quit_requested)
+
+
+## In a 1 vs 1 match there is no retry, and leaving forfeits.
+func use_multiplayer_layout() -> void:
+	(find_child("Retry", true, false) as Button).visible = false
+	(find_child("Paused", true, false) as Label).text = "Menu"
+	(find_child("Level Select", true, false) as Button).text = "Leave Match"
 
 
 func _add_button(parent: Control, caption: String, event: Signal) -> void:

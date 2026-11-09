@@ -209,6 +209,7 @@ sky-skirmish/
     game/        Arena.gd, GameMap.gd, AimCamera.gd, CombatEffects.gd, Pickup.gd
     ui/          Hud.gd, VirtualStick.gd, TouchActionButton.gd, TouchControls.gd
     weapons/     Weapon.gd (base), Pistol.gd, Rifle.gd, Loadout.gd, Projectile.gd, ...
+    net/         NetFighter.gd, DeathmatchRules.gd, NetEventRelay.gd, LanBroadcaster.gd, ...
     bots/        Bot.gd, BotBrain.gd, BotDecision.gd, JetNavGraph.gd, PathFollower.gd
     missions/    Mission.gd (base), Eliminate, Survive, Capture, Boss, Gauntlet, Tutorial
   data/          tuning.json, levels.json, weapons.json, difficulty.json, maps/
@@ -388,6 +389,14 @@ These fill gaps in the sections above.
 - Campaign crates drop only unlocked weapons. Multiplayer crates drop all weapons, so a fresh host still gets a real match.
 - Replaying campaign levels serves as the "offline practice" against bots from Section 3. There is no separate practice screen.
 - The "Sky Ace" skin is a toggle in Settings, shown once earned.
+
+### Multiplayer
+
+- Dying to your own rocket or grenade counts as a death but awards no kill.
+- Each side of a broken connection only sees the other vanish. The phone that still has a network address wins by forfeit; the one without shows "Connection lost".
+- A rematch starts when both players vote for it.
+- Leaving a match from the menu forfeits it and counts as a loss.
+- The menu in a 1 vs 1 match does not pause the game, because the other player's game cannot be frozen.
 
 ### Bots
 
