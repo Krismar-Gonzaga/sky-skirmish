@@ -17,7 +17,7 @@ RELAY_PID=""
 
 probe() {
 	"$GODOT" --headless --path . -s res://tests/net/net_probe.gd -- \
-		--role="$1" --scenario="$2" --port="$3" --relay="$RELAY" \n		--codefile="$LOGS/$2.code" >"$LOGS/$2_$1.log" 2>&1
+		--role="$1" --scenario="$2" --port="$3" --relay="$RELAY" --codefile="$LOGS/$2.code" >"$LOGS/$2_$1.log" 2>&1
 }
 
 report() {
