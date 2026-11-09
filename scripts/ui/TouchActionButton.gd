@@ -36,6 +36,12 @@ func handle_event(event: InputEvent) -> void:
 		queue_redraw()
 
 
+func reset_touch() -> void:
+	_touch_index = -1
+	_tapped = false
+	queue_redraw()
+
+
 ## True while held, and once after a tap too short to span a physics frame.
 func poll() -> bool:
 	var active: bool = _touch_index >= 0 or _tapped

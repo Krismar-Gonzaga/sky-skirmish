@@ -8,8 +8,8 @@
 | M1 Player movement | Done |
 | M2 Combat | Done |
 | M3 Bots | Done |
-| M4 Campaign and level progression | Done, awaiting review |
-| M5 Menus and screens | Not started |
+| M4 Campaign and level progression | Done |
+| M5 Menus and screens | Done, awaiting review |
 | M6 Offline LAN multiplayer | Not started |
 | M7 Online multiplayer | Not started |
 | M8 Android build, polish, submission | Not started |
@@ -27,8 +27,8 @@
 
 ## How to try the game
 
-- Press F5 in the editor to open Level Select.
-- Controls: A/D walk, W or Space jet, S crouch, mouse aims, left click fires, G grenade, Q swap, F melee, F3 debug overlay.
+- Press F5 in the editor. The game starts at the Splash screen and goes to the Main Menu.
+- Controls: A/D walk, W or Space jet, S crouch, mouse aims, left click fires, G grenade, Q swap, F melee, Esc pause, F3 debug overlay.
 - Developer flags go after `--`: `godot --path . -- --level=3 --unlock-all`. Also `--touch` for on-screen controls with a mouse.
 - Weapon and bot sandbox: open `scenes/game/Sandbox.tscn` and press F6. Keys 1 to 4 set bot difficulty, 0 spawns dummies.
 
@@ -40,11 +40,10 @@ Tests redirect saves to `user://test_saves/`, so running them never touches a re
 
 ## Known issues
 
-- `run/main_scene` points at `LevelSelect` until the Splash and Main Menu are built in M5. Level Select has no Back button yet for the same reason.
-- `ProgressService.reset_reason` is set when a save is discarded, but nothing shows the warning until the Splash screen exists in M5.
-- Aim assist is saved in Settings by the design but not built yet. Planned for M5 with the Settings screen.
-- Pause arrives with the pause flow in M5, along with pause-and-save when the app goes to the background.
-- Placeholder sound effects are synthesised. They have only been checked for existence, so someone must listen to them.
+- The LAN and Online lobbies are placeholders until M6 and M7. Their buttons are disabled, and Back works. Rematch on Match Results is also disabled until M6.
+- `docs/CREDITS.md` and `data/credits.json` list only Krismar Gonzaga. Add the other team members.
+- Placeholder music and sound effects are synthesised. They have only been checked for existence, so someone must listen to them.
+- Music is generated at start-up. Check how long start-up takes on a mid-range phone in M8.
 - A standing fighter can wedge its head under a two-tile-high tunnel lip. Moving away frees it; bots recover through stuck detection.
 - Level balance has only been reasoned about. It needs the structured playtests.
 - Real multi-touch feel has not been tried on a phone. Multi-touch logic is covered by automated event tests; the first APK comes in M8.
@@ -55,4 +54,4 @@ Tests redirect saves to `user://test_saves/`, so running them never touches a re
 
 ## Next steps
 
-Review M4, then start M5.
+Review M5, then start M6.

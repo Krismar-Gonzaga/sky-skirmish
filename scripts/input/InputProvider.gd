@@ -8,3 +8,8 @@ extends Node
 ## needs it; other providers ignore it.
 func poll(_aim_origin: Vector2) -> PlayerInput:
 	return PlayerInput.new()
+
+
+## Forgets anything held, for after a pause during which releases went unseen.
+func reset() -> void:
+	pass

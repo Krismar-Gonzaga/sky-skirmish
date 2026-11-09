@@ -2,8 +2,11 @@ class_name Hud
 extends CanvasLayer
 ## In-match readouts in the top corners, leaving the centre clear for the fight.
 
+signal pause_pressed
+
 const CANVAS_LAYER := 5
 const MARGIN := 20.0
+const PAUSE_BUTTON_WIDTH := 100.0
 const BAR_SIZE := Vector2(300.0, 24.0)
 const INFO_FONT_SIZE := 24
 const COUNTDOWN_FONT_SIZE := 56
@@ -125,10 +128,20 @@ func _build_left_panel() -> void:
 
 
 func _build_right_panel() -> void:
+	var pause := Button.new()
+	pause.name = "Pause"
+	pause.text = "II"
+	pause.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	pause.offset_left = -PAUSE_BUTTON_WIDTH - MARGIN
+	pause.offset_right = -MARGIN
+	pause.offset_top = MARGIN
+	pause.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	pause.pressed.connect(func() -> void: pause_pressed.emit())
+	add_child(pause)
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	column.offset_left = -MARGIN
-	column.offset_right = -MARGIN
+	column.offset_left = -MARGIN * 2.0 - PAUSE_BUTTON_WIDTH
+	column.offset_right = -MARGIN * 2.0 - PAUSE_BUTTON_WIDTH
 	column.offset_top = MARGIN
 	column.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	column.alignment = BoxContainer.ALIGNMENT_BEGIN

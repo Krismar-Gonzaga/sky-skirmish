@@ -1,8 +1,8 @@
 class_name LevelResults
-extends Control
+extends MenuScreen
 ## Shows how a level went and offers the next step.
 
-const HEADING_FONT_SIZE := 64
+const RESULT_FONT_SIZE := 64
 const INFO_FONT_SIZE := 30
 const BANNER_FONT_SIZE := 34
 const SPACING := 18
@@ -18,12 +18,6 @@ var _stars: StarRow
 var _time: Label
 var _banner: Label
 var _reward: Label
-
-
-func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
-	_build()
-	show_result(GameState.last_result)
 
 
 func show_result(result: Dictionary) -> void:
@@ -64,40 +58,20 @@ func _banner_text(result: Dictionary, is_last_level: bool) -> String:
 
 
 func _build() -> void:
-	var centre := CenterContainer.new()
-	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(centre)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", SPACING)
-	centre.add_child(column)
-	_heading = _add_label(column, HEADING_FONT_SIZE, "text")
+	back_target = GameState.LEVEL_SELECT
+	var column: VBoxContainer = make_centred_column()
+	_heading = add_label(column, "", RESULT_FONT_SIZE, "text")
 	_stars = StarRow.new()
 	_stars.star_size = LARGE_STAR_SIZE
 	column.add_child(_stars)
-	_time = _add_label(column, INFO_FONT_SIZE, "text")
-	_banner = _add_label(column, BANNER_FONT_SIZE, "amber")
-	_reward = _add_label(column, INFO_FONT_SIZE, "teal")
+	_time = add_label(column, "", INFO_FONT_SIZE, "text")
+	_banner = add_label(column, "", BANNER_FONT_SIZE, "amber")
+	_reward = add_label(column, "", INFO_FONT_SIZE, "teal")
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", BUTTON_SPACING)
 	column.add_child(buttons)
-	next_button = _add_button(buttons, "Next")
-	retry_button = _add_button(buttons, "Retry")
-	select_button = _add_button(buttons, "Level Select")
-	select_button.pressed.connect(GameState.go_to_level_select)
-
-
-func _add_label(parent: Control, font_size: int, color_name: String) -> Label:
-	var label := Label.new()
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", AssetMap.color(color_name))
-	parent.add_child(label)
-	return label
-
-
-func _add_button(parent: Control, caption: String) -> Button:
-	var button := Button.new()
-	button.text = caption
-	parent.add_child(button)
-	return button
+	next_button = add_button(buttons, "Next", func() -> void: pass)
+	retry_button = add_button(buttons, "Retry", func() -> void: pass)
+	select_button = add_button(buttons, "Level Select", goes_to(GameState.LEVEL_SELECT))
+	show_result(GameState.last_result)

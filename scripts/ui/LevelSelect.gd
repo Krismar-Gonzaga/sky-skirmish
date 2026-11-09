@@ -1,5 +1,5 @@
 class_name LevelSelect
-extends Control
+extends MenuScreen
 ## The campaign map: one card per level, locked until the previous one is clear.
 
 const COLUMNS := 5
@@ -11,20 +11,8 @@ const CARD_TITLE_FONT_SIZE := 20
 const MESSAGE_FONT_SIZE := 26
 const LOCKED_TINT := Color(0.55, 0.55, 0.62)
 
-## Tests turn this off to check selection without leaving the screen.
-var start_on_select: bool = true
-
 var _cards: Dictionary = {}
 var _message: Label
-
-
-func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
-	_build()
-	if GameState.requested_level > 0:
-		var level_id: int = GameState.requested_level
-		GameState.requested_level = 0
-		select_level.call_deferred(level_id)
 
 
 ## Returns true if the level starts. A locked level only shows a message.
@@ -32,8 +20,7 @@ func select_level(level_id: int) -> bool:
 	if not ProgressService.is_unlocked(level_id):
 		_message.text = "Clear Level %d first." % (level_id - 1)
 		return false
-	if start_on_select:
-		GameState.start_level(level_id)
+	GameState.start_level(level_id)
 	return true
 
 
@@ -46,6 +33,7 @@ func message_text() -> String:
 
 
 func _build() -> void:
+	back_target = GameState.MAIN_MENU
 	var centre := CenterContainer.new()
 	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(centre)
@@ -71,6 +59,7 @@ func _build() -> void:
 	_message.add_theme_font_size_override("font_size", MESSAGE_FONT_SIZE)
 	_message.add_theme_color_override("font_color", AssetMap.color("amber"))
 	column.add_child(_message)
+	add_back_button()
 
 
 func _build_card(level_id: int) -> Button:

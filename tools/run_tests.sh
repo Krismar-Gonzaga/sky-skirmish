@@ -21,10 +21,10 @@ fi
 
 echo "== GDScript warnings =="
 # The timeout guards against the debugger prompt looping after a parse error.
-lint_output="$(timeout 120 "$GODOT" --headless --path . -d -s "$ROOT/tools/check_warnings.gd" </dev/null 2>&1)"
+lint_output="$(timeout 60 "$GODOT" --headless --path . -d -s "$ROOT/tools/check_warnings.gd" </dev/null 2>&1)"
 lint_status=$?
-if [ "$lint_status" -ne 0 ] || echo "$lint_output" | grep -E "^(ERROR|WARNING|SCRIPT ERROR)" >/dev/null; then
-	echo "$lint_output" | grep -E "^(ERROR|WARNING|SCRIPT ERROR)" | head -n 40
+if [ "$lint_status" -ne 0 ] || echo "$lint_output" | grep -E "^(ERROR|WARNING|SCRIPT ERROR|Debugger Break)" >/dev/null; then
+	echo "$lint_output" | grep -E "^(WARNING|SCRIPT ERROR|Debugger Break)" | sort -u | head -n 40
 	echo "Warning check failed: fix the items above." >&2
 	exit 1
 fi

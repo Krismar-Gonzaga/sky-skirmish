@@ -12,6 +12,8 @@ const SWING_ANGLE := 1.3
 const SWING_TIME := 0.08
 
 var _body: Node2D
+var _torso: Node2D
+var _head: Node2D
 var _arm: Node2D
 var _held_weapon: Node2D
 var _held_weapon_id: String = ""
@@ -26,8 +28,12 @@ func _ready() -> void:
 	_body = Node2D.new()
 	_body.material = _flash_material
 	add_child(_body)
-	for part: String in ["player.jetpack", "player.legs", "player.torso", "player.head"]:
-		_body.add_child(_create_part(part))
+	_body.add_child(_create_part("player.jetpack"))
+	_body.add_child(_create_part("player.legs"))
+	_torso = _create_part("player.torso")
+	_body.add_child(_torso)
+	_head = _create_part("player.head")
+	_body.add_child(_head)
 	_arm = _create_part("player.arm")
 	_arm.position = SHOULDER
 	_body.add_child(_arm)
@@ -51,6 +57,22 @@ func show_weapon(weapon_id: String) -> void:
 		_held_weapon.queue_free()
 	_held_weapon = _create_part("weapon.%s" % weapon_id)
 	_arm.add_child(_held_weapon)
+
+
+## Swaps the parts a skin recolours. An unknown skin leaves the default look.
+func apply_skin(skin_id: String) -> void:
+	_torso = _replace_part(_torso, "skin.%s.torso" % skin_id)
+	_head = _replace_part(_head, "skin.%s.head" % skin_id)
+
+
+func _replace_part(old_part: Node2D, key: String) -> Node2D:
+	if not AssetMap.has_sprite(key):
+		return old_part
+	var new_part: Node2D = _create_part(key)
+	_body.add_child(new_part)
+	_body.move_child(new_part, old_part.get_index())
+	old_part.queue_free()
+	return new_part
 
 
 func flash_hit() -> void:

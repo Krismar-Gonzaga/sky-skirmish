@@ -128,6 +128,10 @@ func give_weapon(weapon_id: String) -> void:
 	loadout.pickup(weapon_id)
 
 
+func apply_skin(skin_id: String) -> void:
+	_visual.apply_skin(skin_id)
+
+
 func set_visual_scale(factor: float) -> void:
 	_visual.scale = Vector2(factor, factor)
 

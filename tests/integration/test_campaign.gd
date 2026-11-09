@@ -20,10 +20,12 @@ func before_each() -> void:
 	ProgressService.load_save()
 	GameState.pending_level = 0
 	GameState.last_result = {}
+	GameState.suppress_scene_changes = true
 	result = {}
 
 
 func after_all() -> void:
+	GameState.suppress_scene_changes = false
 	ProgressService.use_directory(ProgressService.DEFAULT_DIRECTORY)
 	ProgressService.load_save()
 
@@ -54,7 +56,6 @@ func _freeze_enemies() -> void:
 
 func _select_screen() -> LevelSelect:
 	var screen: LevelSelect = LevelSelectScene.instantiate() as LevelSelect
-	screen.start_on_select = false
 	add_child_autofree(screen)
 	return screen
 

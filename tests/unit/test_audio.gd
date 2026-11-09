@@ -25,6 +25,13 @@ func test_synthesised_sounds_contain_audio() -> void:
 		assert_gt(stream.data.size(), 0, key)
 
 
+func test_music_tracks_exist_and_loop() -> void:
+	for key: String in ["menu", "battle"]:
+		var stream: AudioStreamWAV = AssetMap.create_music(key) as AudioStreamWAV
+		assert_gt(stream.data.size(), 0, key)
+		assert_eq(stream.loop_mode, AudioStreamWAV.LOOP_FORWARD, key)
+
+
 func test_only_the_jetpack_loops() -> void:
 	for key: String in AssetMap.sound_keys():
 		var stream: AudioStreamWAV = AssetMap.create_sound(key) as AudioStreamWAV

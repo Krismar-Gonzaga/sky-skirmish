@@ -21,6 +21,9 @@
     "player.jetpack": {"texture": "", "color": "muted", "polygon": [[-23, -52], [-13, -52], [-13, -24], [-23, -24]]},
     "player.arm": {"texture": "", "color": "amber", "polygon": [[0, -4], [20, -4], [20, 4], [0, 4]]},
 
+    "skin.sky_ace.torso": {"texture": "", "color": "amber", "polygon": [[-14, -54], [14, -54], [14, -26], [-14, -26]]},
+    "skin.sky_ace.head": {"texture": "", "color": "teal", "polygon": [[0, -72], [9, -67], [9, -57], [0, -52], [-9, -57], [-9, -67]]},
+
     "weapon.pistol": {"texture": "", "color": "muted", "polygon": [[18, -5], [34, -5], [34, 1], [18, 1]]},
     "weapon.rifle": {"texture": "", "color": "slate", "polygon": [[10, -5], [50, -5], [50, 1], [10, 1]]},
     "weapon.shotgun": {"texture": "", "color": "flame", "polygon": [[10, -6], [44, -6], [44, 3], [10, 3]]},
@@ -52,6 +55,18 @@
       "polygon": [[0, 0], [160, -150], [330, -40], [560, -210], [760, -30], [990, -170], [1200, 0], [1200, 2400], [0, 2400]]
     }
   ],
+  "music": {
+    "menu": {
+      "file": "", "step_seconds": 0.28, "root_hz": 110.0, "volume": 0.3,
+      "bass": [0, 0, 0, 0, 3, 3, 3, 3, -2, -2, -2, -2, 5, 5, 5, 5],
+      "lead": [12, 15, 19, 15, 15, 19, 22, 19, 10, 14, 17, 14, 17, 21, 24, 21]
+    },
+    "battle": {
+      "file": "", "step_seconds": 0.16, "root_hz": 82.41, "volume": 0.3,
+      "bass": [0, 0, 12, 0, 0, 12, 0, 12, 3, 3, 15, 3, -2, -2, 10, -2],
+      "lead": [24, 27, 31, 27, 24, 27, 31, 34, 27, 31, 34, 31, 22, 26, 29, 26]
+    }
+  },
   "sounds": {
     "shot_pistol": {"file": "", "wave": "square", "duration": 0.09, "start_hz": 900.0, "end_hz": 260.0, "decay": 2.0, "volume": 0.3},
     "shot_rifle": {"file": "", "wave": "noise", "duration": 0.08, "smooth": 0.7, "decay": 2.5, "volume": 0.4},

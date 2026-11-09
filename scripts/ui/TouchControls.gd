@@ -36,6 +36,14 @@ func set_stick_scale(new_scale: float) -> void:
 	_layout()
 
 
+func reset_touches() -> void:
+	move_stick.reset_touch()
+	aim_stick.reset_touch()
+	melee_button.reset_touch()
+	grenade_button.reset_touch()
+	swap_button.reset_touch()
+
+
 func _add_stick() -> VirtualStick:
 	var stick := VirtualStick.new()
 	stick.release_threshold = _config["fire_threshold"]

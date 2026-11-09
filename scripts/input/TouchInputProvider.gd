@@ -33,6 +33,10 @@ func poll(_aim_origin: Vector2) -> PlayerInput:
 	return input
 
 
+func reset() -> void:
+	controls.reset_touches()
+
+
 func _read_move_stick(input: PlayerInput) -> void:
 	var stick: Vector2 = controls.move_stick.output
 	input.move.y = stick.y

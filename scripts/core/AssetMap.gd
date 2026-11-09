@@ -59,6 +59,23 @@ static func create_sound(key: String) -> AudioStream:
 	return SfxSynth.create(entry)
 
 
+static func music_keys() -> Array:
+	return _load().get("music", {}).keys()
+
+
+static func create_music(key: String) -> AudioStream:
+	var tracks: Dictionary = _load().get("music", {})
+	var entry: Dictionary = tracks.get(key, {})
+	var file_path: String = entry.get("file", "")
+	if not file_path.is_empty():
+		return load(file_path) as AudioStream
+	return SfxSynth.create_music(entry)
+
+
+static func has_sprite(key: String) -> bool:
+	return _load().get("sprites", {}).has(key)
+
+
 static func backdrop_layers() -> Array:
 	return _load().get("backdrop", [])
 

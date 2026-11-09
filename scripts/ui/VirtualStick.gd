@@ -43,6 +43,13 @@ func consume_release() -> Vector2:
 	return released
 
 
+func reset_touch() -> void:
+	_touch_index = -1
+	_released_vector = Vector2.ZERO
+	output = Vector2.ZERO
+	queue_redraw()
+
+
 func _handle_touch(touch: InputEventScreenTouch) -> void:
 	if touch.pressed:
 		var is_free: bool = _touch_index < 0

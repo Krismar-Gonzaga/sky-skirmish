@@ -28,6 +28,12 @@ func _ready() -> void:
 	load_save()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if not data.is_empty():
+			save()
+
+
 ## Points the service at another folder, so tests never touch a real save.
 func use_directory(directory: String) -> void:
 	_directory = directory
