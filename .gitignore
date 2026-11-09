@@ -1,0 +1,18 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Machine-specific paths (see tools/local.env.example)
+tools/local.env
+
+# Relay server
+server/node_modules/
+
+# Build output and signing secrets: never commit a keystore or its password
+/build/
+*.apk
+*.aab
+*.keystore
+*.jks
+export_credentials.cfg
+.env
