@@ -13,6 +13,9 @@ const HOST_LINGER_SECONDS := 2.0
 var role: String = ""
 var scenario: String = ""
 var port: int = 0
+var relay: String = ""
+var codefile: String = ""
+var _relay_was_used: bool = false
 
 var network: Node
 var game_state: Node
@@ -33,6 +36,10 @@ func _start() -> void:
 				scenario = parts[1]
 			"port":
 				port = parts[1].to_int()
+			"relay":
+				relay = parts[1]
+			"codefile":
+				codefile = parts[1]
 	network = get_node("/root/NetworkManager")
 	game_state = get_node("/root/GameState")
 	var progress: Node = get_node("/root/ProgressService")
@@ -45,19 +52,37 @@ func _start() -> void:
 	call("_%s_%s" % [scenario, role])
 
 
-func _finish(passed: bool, detail: String) -> void:
+func _finish(requested_pass: bool, detail: String) -> void:
+	var passed: bool = requested_pass
+	# Without this, a mistake in the test setup would quietly test ENet instead.
+	if _uses_relay_scenario() and not _relay_was_used:
+		passed = false
+		detail = "relay was never used: " + detail
 	print("NET_TEST %s %s/%s: %s" % ["PASS" if passed else "FAIL", scenario, role, detail])
 	get_tree().quit(0 if passed else 1)
 
 
+func _note_transport() -> void:
+	_relay_was_used = multiplayer.multiplayer_peer is RelayMultiplayerPeer
+
+
 func _join() -> void:
-	network.join_lan("127.0.0.1", port)
+	if relay.is_empty():
+		network.join_lan("127.0.0.1", port)
+		return
+	await _wait_until(func() -> bool: return FileAccess.file_exists(codefile) and FileAccess.get_file_as_string(codefile).length() == 6)
+	network.join_online(relay, FileAccess.get_file_as_string(codefile))
+	_note_transport()
 
 
 func _wait_until(condition: Callable) -> void:
 	while not condition.call():
 		for i: int in range(POLL_FRAMES):
 			await get_tree().process_frame
+
+
+func _uses_relay_scenario() -> bool:
+	return scenario == "t7" or scenario == "t8" or scenario == "waking" or scenario.begins_with("online")
 
 
 func _match_started() -> bool:
@@ -71,15 +96,27 @@ func _rules() -> DeathmatchRules:
 	return (get_tree().current_scene as Match).deathmatch
 
 
+func _host_session() -> void:
+	if relay.is_empty():
+		network.host_lan(port)
+		return
+	network.host_online(relay)
+	_note_transport()
+	var code: String = await network.room_created
+	var file: FileAccess = FileAccess.open(codefile, FileAccess.WRITE)
+	file.store_string(code)
+	file.close()
+
+
 func _host_until_match() -> void:
-	network.host_lan(port)
+	await _host_session()
 	await network.peer_joined
 	network.start_match("outpost")
 	await _wait_until(_match_started)
 
 
 func _client_until_match() -> void:
-	_join()
+	await _join()
 	await _wait_until(_match_started)
 
 
@@ -130,6 +167,10 @@ func _t6_host() -> void:
 
 func _t6_client() -> void:
 	await _client_until_match()
+	await _t6_after_match_start()
+
+
+func _t6_after_match_start() -> void:
 	var rules: DeathmatchRules = _rules()
 	var mine: NetFighter = rules.fighter(multiplayer_id())
 	var theirs: NetFighter = rules.fighter(1)
@@ -200,7 +241,7 @@ func _t9_no_network_client() -> void:
 # T10: different game versions.
 
 func _t10_host() -> void:
-	network.host_lan(port)
+	await _host_session()
 	var joined_up: Array[bool] = [false]
 	network.peer_joined.connect(func(_id: int) -> void: joined_up[0] = true)
 	await get_tree().create_timer(4.0).timeout
@@ -209,7 +250,7 @@ func _t10_host() -> void:
 
 func _t10_client() -> void:
 	network.game_version = "0.0.0-old"
-	_join()
+	await _join()
 	var message: Variant = await network.join_failed
 	_finish(str(message) == "Update required", str(message))
 
@@ -261,7 +302,7 @@ func _rematch_host() -> void:
 	await _host_until_match()
 	await get_tree().create_timer(1.0).timeout
 	await _play_to_results_as_host()
-	network.vote_rematch()
+	network.rematch.vote()
 	await _wait_until(_match_started)
 	var fresh_score: bool = _rules().score != null and int(_rules().score.kills[1]) == 0
 	# Exiting now would cut off a client still loading the match.
@@ -272,6 +313,73 @@ func _rematch_host() -> void:
 func _rematch_client() -> void:
 	await _client_until_match()
 	await _wait_until(func() -> bool: return get_tree().current_scene is MatchResults)
-	network.vote_rematch()
+	network.rematch.vote()
 	await _wait_until(_match_started)
 	_finish(true, "second match started")
+
+
+# Online: the same scenarios through a real relay.
+
+func _t7_host() -> void:
+	await _t6_host()
+
+
+## T7's limit: a match starts within 10 s of joining.
+func _t7_client() -> void:
+	var started: int = Time.get_ticks_msec()
+	await _client_until_match()
+	var seconds: float = (Time.get_ticks_msec() - started) / 1000.0
+	if seconds > 10.0:
+		_finish(false, "match took %.1f s to start" % seconds)
+		return
+	await _t6_after_match_start()
+
+
+func _t8_client() -> void:
+	network.join_online(relay, "ZZZZZZ")
+	_note_transport()
+	var message: Variant = await network.join_failed
+	_finish(str(message) == "Room not found", str(message))
+
+
+func _online_t10_host() -> void:
+	await _t10_host()
+
+
+func _online_t10_client() -> void:
+	await _t10_client()
+
+
+func _online_client_drops_host() -> void:
+	await _t9_client_drops_host()
+
+
+func _online_client_drops_client() -> void:
+	await _t9_client_drops_client()
+
+
+func _online_host_drops_host() -> void:
+	await _t9_host_drops_host()
+
+
+func _online_host_drops_client() -> void:
+	await _t9_host_drops_client()
+
+
+func _online_rematch_host() -> void:
+	await _rematch_host()
+
+
+func _online_rematch_client() -> void:
+	await _rematch_client()
+
+
+# The relay is not running yet when the client starts, as with a sleeping server.
+
+func _waking_client() -> void:
+	var saw_waking: Array[bool] = [false]
+	network.server_waking.connect(func() -> void: saw_waking[0] = true)
+	network.host_online(relay)
+	_note_transport()
+	await network.room_created
+	_finish(saw_waking[0], "waking notice shown: %s" % str(saw_waking[0]))

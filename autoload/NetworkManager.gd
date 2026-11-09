@@ -10,7 +10,8 @@ signal peer_left(peer_id: int)
 signal connection_lost
 signal match_starting(map_id: String)
 signal scene_ready_changed
-signal rematch_votes_changed
+signal room_created(code: String)
+signal server_waking
 
 const HOST_ID := 1
 const UNREACHABLE_MESSAGE := "Could not reach host."
@@ -24,6 +25,8 @@ var game_version: String = ""
 ## peer id to {"name": String, "skin": String}, including this device.
 var peers: Dictionary = {}
 var last_map: String = ""
+var room_code: String = ""
+var rematch: RematchVoting
 ## Replaced in tests to simulate losing the network.
 var has_network_check: Callable = has_local_network
 
@@ -32,13 +35,15 @@ var _active: bool = false
 var _joining: bool = false
 var _join_left: float = 0.0
 var _scene_ready: Dictionary = {}
-var _rematch_votes: Dictionary = {}
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_config = Tuning.section("net")
 	game_version = str(ProjectSettings.get_setting("application/config/version"))
+	rematch = RematchVoting.new()
+	rematch.name = "Rematch"
+	add_child(rematch)
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
@@ -47,7 +52,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if _joining:
+	if _joining and _join_left != INF:
 		_join_left -= delta
 		if _join_left <= 0.0:
 			_fail_join(UNREACHABLE_MESSAGE)
@@ -94,12 +99,34 @@ func join_lan(address: String, port: int = 0) -> void:
 	_join_left = _config["join_timeout"]
 
 
+## Address of the relay: the --relay flag, or relay_url in data/tuning.json.
+func relay_url() -> String:
+	return GameState.relay_override if not GameState.relay_override.is_empty() else str(_config["relay_url"])
+
+
+func host_online(url: String) -> void:
+	var relay: RelayMultiplayerPeer = _new_relay()
+	relay.room_ready.connect(_on_room_ready)
+	relay.create_room(url, game_version)
+	_begin_session(relay)
+
+
+func join_online(url: String, code: String) -> void:
+	var relay: RelayMultiplayerPeer = _new_relay()
+	relay.join_room(url, code, game_version)
+	_begin_session(relay)
+	_joining = true
+	# The relay enforces its own wake-up allowance; this timer starts once connected.
+	_join_left = INF
+
+
 func leave() -> void:
 	_active = false
 	_joining = false
 	peers.clear()
+	room_code = ""
 	_scene_ready.clear()
-	_rematch_votes.clear()
+	rematch.clear()
 	# Deferred: this often runs inside a disconnect callback, and replacing the
 	# peer while it is polling crashes the engine.
 	_close_peer.call_deferred()
@@ -110,7 +137,7 @@ func start_match(map_id: String) -> void:
 		return
 	last_map = map_id
 	_scene_ready.clear()
-	_rematch_votes.clear()
+	rematch.clear()
 	_begin_match.rpc(map_id)
 
 
@@ -129,39 +156,26 @@ func all_scenes_ready() -> bool:
 	return true
 
 
-func vote_rematch() -> void:
-	if multiplayer.is_server():
-		_add_rematch_vote(HOST_ID)
-	else:
-		_request_rematch.rpc_id(HOST_ID)
-
-
-func rematch_vote_count() -> int:
-	return _rematch_votes.size()
-
-
 func has_local_network() -> bool:
-	return not local_ipv4_addresses().is_empty()
-
-
-## Addresses another device could reach this one on.
-func local_ipv4_addresses() -> PackedStringArray:
-	var found := PackedStringArray()
-	for address: String in IP.get_local_addresses():
-		var is_ipv4: bool = address.is_valid_ip_address() and not address.contains(":")
-		if is_ipv4 and not address.begins_with("127.") and not address.begins_with("169.254."):
-			found.append(address)
-	return found
+	return not LanDiscovery.local_ipv4_addresses().is_empty()
 
 
 func ping_ms() -> int:
+	if not _active or multiplayer.is_server():
+		return -1
+	if multiplayer.multiplayer_peer is RelayMultiplayerPeer:
+		return (multiplayer.multiplayer_peer as RelayMultiplayerPeer).ping_ms
 	var peer := multiplayer.multiplayer_peer as ENetMultiplayerPeer
-	if peer == null or not _active or multiplayer.is_server():
-		return -1
-	var host_peer: ENetPacketPeer = peer.get_peer(HOST_ID)
-	if host_peer == null:
-		return -1
-	return int(host_peer.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME))
+	var host_peer: ENetPacketPeer = peer.get_peer(HOST_ID) if peer != null else null
+	return int(host_peer.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)) if host_peer != null else -1
+
+
+func _new_relay() -> RelayMultiplayerPeer:
+	var relay := RelayMultiplayerPeer.new()
+	relay.failed.connect(_on_relay_failed)
+	relay.waking.connect(func() -> void: server_waking.emit())
+	relay.link_lost.connect(_on_relay_link_lost)
+	return relay
 
 
 func _close_peer() -> void:
@@ -177,7 +191,7 @@ func _begin_session(peer: MultiplayerPeer) -> void:
 	_active = true
 	peers.clear()
 	_scene_ready.clear()
-	_rematch_votes.clear()
+	rematch.clear()
 
 
 func _describe_self() -> Dictionary:
@@ -199,6 +213,25 @@ func _apply_timeouts(peer_id: int) -> void:
 		connection.set_timeout(0, int(_config["peer_timeout_min_ms"]), int(_config["peer_timeout_max_ms"]))
 
 
+func _on_room_ready(code: String) -> void:
+	room_code = code
+	peers[HOST_ID] = _describe_self()
+	hosted.emit()
+	room_created.emit(code)
+
+
+func _on_relay_failed(message: String) -> void:
+	_fail_join(message)
+
+
+func _on_relay_link_lost() -> void:
+	# A client hears this through server_disconnected, and a host with a guest
+	# through peer_left. Only a host waiting alone needs telling here.
+	if _active and multiplayer.is_server() and peers.size() <= 1:
+		_active = false
+		connection_lost.emit()
+
+
 func _on_peer_connected(peer_id: int) -> void:
 	if multiplayer.is_server():
 		_apply_timeouts(peer_id)
@@ -206,6 +239,7 @@ func _on_peer_connected(peer_id: int) -> void:
 
 func _on_connected_to_server() -> void:
 	_apply_timeouts(HOST_ID)
+	_join_left = _config["join_timeout"]
 	_hello.rpc_id(HOST_ID, game_version, Settings.player_name, Settings.selected_skin)
 
 
@@ -226,20 +260,13 @@ func _on_peer_disconnected(peer_id: int) -> void:
 	if not _active or not peers.has(peer_id):
 		return
 	peers.erase(peer_id)
-	_rematch_votes.erase(peer_id)
+	rematch.forget(peer_id)
 	peer_left.emit(peer_id)
 
 
 func _mark_scene_ready(peer_id: int) -> void:
 	_scene_ready[peer_id] = true
 	scene_ready_changed.emit()
-
-
-func _add_rematch_vote(peer_id: int) -> void:
-	_rematch_votes[peer_id] = true
-	_broadcast_rematch_votes.rpc(_rematch_votes.keys())
-	if _rematch_votes.size() >= peers.size():
-		start_match(last_map)
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -275,7 +302,7 @@ func _rejected(message: String) -> void:
 func _begin_match(map_id: String) -> void:
 	last_map = map_id
 	_scene_ready.clear()
-	_rematch_votes.clear()
+	rematch.clear()
 	match_starting.emit(map_id)
 
 
@@ -283,17 +310,3 @@ func _begin_match(map_id: String) -> void:
 func _scene_is_ready() -> void:
 	if multiplayer.is_server():
 		_mark_scene_ready(multiplayer.get_remote_sender_id())
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func _request_rematch() -> void:
-	if multiplayer.is_server():
-		_add_rematch_vote(multiplayer.get_remote_sender_id())
-
-
-@rpc("authority", "call_local", "reliable")
-func _broadcast_rematch_votes(voters: Array) -> void:
-	_rematch_votes.clear()
-	for voter: int in voters:
-		_rematch_votes[voter] = true
-	rematch_votes_changed.emit()

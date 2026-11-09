@@ -10,8 +10,8 @@
 | M3 Bots | Done |
 | M4 Campaign and level progression | Done |
 | M5 Menus and screens | Done |
-| M6 Offline LAN multiplayer | Automated checks pass; waiting for the two-phone test |
-| M7 Online multiplayer | Not started |
+| M6 Offline LAN multiplayer | Automated checks pass. Two-phone test not yet reported |
+| M7 Online multiplayer | Automated checks pass through a local relay. Render deployment and mobile-data test not yet done |
 | M8 Android build, polish, submission | Not started |
 
 ## Environment (this machine)
@@ -29,23 +29,26 @@
 
 - Press F5 in the editor. The game starts at the Splash screen and goes to the Main Menu.
 - Controls: A/D walk, W or Space jet, S crouch, mouse aims, left click fires, G grenade, Q swap, F melee, Esc pause, F3 debug overlay.
-- Two windows on one PC: `bash tools/run_local_mp.sh` (from Git Bash).
-- Developer flags go after `--`: `--level=3`, `--unlock-all`, `--touch`, `--host`, `--join=<ip>`, `--profile=<name>`.
+- Two windows on one PC over LAN: `bash tools/run_local_mp.sh` (from Git Bash).
+- Online on one PC: see "Run it on your own PC" in `docs/RELAY_DEPLOY.md`.
+- Developer flags go after `--`: `--level=3`, `--unlock-all`, `--touch`, `--host`, `--join=<ip>`, `--relay=<url>`, `--room=<code>`, `--profile=<name>`.
 - Debug APK for phones: `godot --headless --path . --export-debug "Android" build/sky-skirmish-debug.apk`. The `build/` folder is git-ignored.
 
 ## Tests
 
-`tools/run_tests.sh` runs everything, about 2 minutes:
+`tools/run_tests.sh` runs everything, about 4 minutes:
 
 - GUT unit and integration tests, with `--fixed-fps 60` so simulated time runs as fast as the CPU allows.
-- `tools/run_net_tests.sh`: two real Godot processes over ENet on localhost, for T6, T9, T10, the lobby, rematch and joining with nobody hosting.
+- `tools/run_net_tests.sh`: two real Godot processes, for T6, T9 and T10 over ENet, and T7, T8, T10, forfeits, rematch and server wake-up through a real local relay. Online scenarios fail if the relay peer was not actually used.
+- `npm test` in `server/`: the relay on its own.
 
 Tests redirect saves to `user://test_saves/`, so running them never touches a real save.
 
 ## Known issues
 
-- The Online lobby is a placeholder until M7. Back works.
-- Clients see their own fighter about 50 ms plus the network delay behind their input, because the host is authoritative and there is no client prediction. Judge this on real phones.
+- `relay_url` in `data/tuning.json` is empty until the relay is deployed. Until then the Online lobby says the server is not set up.
+- The relay has only been tested on Node 24. Its code avoids anything newer than Node 20.
+- Clients see their own fighter about 50 ms plus the network delay behind their input, because the host is authoritative and there is no client prediction. Online this delay is larger. Judge it on real phones.
 - Discovery uses UDP broadcast, which some phones block. Manual IP entry is the fallback.
 - `docs/CREDITS.md` and `data/credits.json` list only Krismar Gonzaga. Add the other team members.
 - Placeholder music and sound effects are synthesised. They have only been checked for existence, so someone must listen to them.
@@ -57,4 +60,6 @@ Tests redirect saves to `user://test_saves/`, so running them never touches a re
 
 ## Next steps
 
-Confirm LAN play on two phones over a hotspot, then start M7.
+1. Confirm LAN play on two phones over a hotspot.
+2. Deploy the relay using `docs/RELAY_DEPLOY.md` and confirm T7 and T8 over mobile data.
+3. Start M8.

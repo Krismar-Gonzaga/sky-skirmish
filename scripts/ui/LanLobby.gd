@@ -4,7 +4,6 @@ extends MenuScreen
 
 const ADDRESS_FONT_SIZE := 64
 const FOUND_HOSTS_SHOWN := 3
-const MAP_IDS: Array[String] = ["outpost", "canyon", "skyforge"]
 const ROW_SPACING := 12
 const MANUAL_FIELD_WIDTH := 340.0
 const JOIN_COLUMNS_GAP := 40
@@ -17,14 +16,14 @@ var _address_label: Label
 var _found_list: VBoxContainer
 var _address_field: LineEdit
 var _start_button: Button
-var _map_buttons: Dictionary = {}
-var _chosen_map: String = "outpost"
+var _map_chooser: MapChooser
 var _broadcaster: LanBroadcaster
 var _listener: LanListener
 
 
 func _build() -> void:
 	back_target = GameState.MULTIPLAYER_MENU
+	GameState.current_lobby = GameState.LAN_LOBBY
 	add_back_button()
 	var column: VBoxContainer = make_centred_column()
 	add_heading(column, "Local Match")
@@ -82,7 +81,7 @@ func join_address(address: String) -> void:
 
 
 func _start_match() -> void:
-	NetworkManager.start_match(_chosen_map)
+	NetworkManager.start_match(_map_chooser.chosen_map)
 
 
 func _build_host_panel(parent: Control) -> void:
@@ -92,17 +91,10 @@ func _build_host_panel(parent: Control) -> void:
 	parent.add_child(_host_panel)
 	add_label(_host_panel, "Your address", BODY_FONT_SIZE, "muted")
 	_address_label = add_label(_host_panel, "", ADDRESS_FONT_SIZE, "amber")
-	var maps := HBoxContainer.new()
-	maps.alignment = BoxContainer.ALIGNMENT_CENTER
-	maps.add_theme_constant_override("separation", ROW_SPACING)
-	_host_panel.add_child(maps)
-	for map_id: String in MAP_IDS:
-		var button: Button = add_button(maps, map_id.capitalize(), _choose_map.bind(map_id))
-		button.disabled = not ProgressService.is_map_unlocked(map_id)
-		_map_buttons[map_id] = button
+	_map_chooser = MapChooser.new()
+	_host_panel.add_child(_map_chooser)
 	_start_button = add_button(_host_panel, "Start", _start_match)
 	_start_button.disabled = true
-	_choose_map(_chosen_map)
 
 
 func _build_join_panel(parent: Control) -> void:
@@ -126,13 +118,6 @@ func _build_join_panel(parent: Control) -> void:
 	add_button(manual, "Connect", func() -> void: join_address(_address_field.text.strip_edges()))
 
 
-func _choose_map(map_id: String) -> void:
-	_chosen_map = map_id
-	for each: String in _map_buttons:
-		var button: Button = _map_buttons[each]
-		button.modulate = AssetMap.color("amber") if each == map_id else Color.WHITE
-
-
 func _refresh_found_hosts() -> void:
 	for child: Node in _found_list.get_children():
 		_found_list.remove_child(child)
@@ -150,7 +135,7 @@ func _refresh_found_hosts() -> void:
 
 
 func _on_hosted() -> void:
-	var addresses: PackedStringArray = NetworkManager.local_ipv4_addresses()
+	var addresses: PackedStringArray = LanDiscovery.local_ipv4_addresses()
 	_address_label.text = addresses[0] if not addresses.is_empty() else "No network"
 	_status.text = "Waiting for a player..."
 

@@ -45,7 +45,7 @@ func _exit_tree() -> void:
 ## Some phones drop the global address on a hotspot, so each subnet is tried too.
 func _broadcast_addresses() -> PackedStringArray:
 	var addresses := PackedStringArray([GLOBAL_BROADCAST])
-	for local: String in NetworkManager.local_ipv4_addresses():
+	for local: String in LanDiscovery.local_ipv4_addresses():
 		var parts: PackedStringArray = local.split(".")
 		parts[3] = "255"
 		addresses.append(".".join(parts))

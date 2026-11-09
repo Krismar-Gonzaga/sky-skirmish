@@ -57,6 +57,8 @@ func _go_on() -> void:
 		var level_id: int = GameState.requested_level
 		GameState.requested_level = 0
 		GameState.start_level(level_id)
+	elif not GameState.relay_override.is_empty():
+		GameState.go_to(GameState.ONLINE_LOBBY)
 	elif GameState.auto_host or not GameState.auto_join.is_empty():
 		GameState.go_to(GameState.LAN_LOBBY)
 	else:

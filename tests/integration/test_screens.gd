@@ -268,16 +268,16 @@ func test_lan_lobby_join_panel_opens_with_manual_entry() -> void:
 
 func test_locked_maps_cannot_be_chosen_by_the_host() -> void:
 	var screen: LanLobby = _open(GameState.LAN_LOBBY) as LanLobby
-	assert_false((screen._map_buttons["outpost"] as Button).disabled)
-	assert_true((screen._map_buttons["canyon"] as Button).disabled)
-	assert_true((screen._map_buttons["skyforge"] as Button).disabled)
+	assert_false(screen._map_chooser.button("outpost").disabled)
+	assert_true(screen._map_chooser.button("canyon").disabled)
+	assert_true(screen._map_chooser.button("skyforge").disabled)
 
 
 func test_earned_maps_can_be_chosen_by_the_host() -> void:
 	ProgressService.complete_level(5, 1, 100.0)
 	var screen: LanLobby = _open(GameState.LAN_LOBBY) as LanLobby
-	assert_false((screen._map_buttons["canyon"] as Button).disabled)
-	assert_true((screen._map_buttons["skyforge"] as Button).disabled)
+	assert_false(screen._map_chooser.button("canyon").disabled)
+	assert_true(screen._map_chooser.button("skyforge").disabled)
 
 
 func test_rematch_needs_an_opponent() -> void:

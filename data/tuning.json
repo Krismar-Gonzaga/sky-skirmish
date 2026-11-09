@@ -76,7 +76,15 @@
     "state_interval": 0.05,
     "score_sync_interval": 1.0,
     "interpolation_delay": 0.1,
-    "own_interpolation_delay": 0.05
+    "own_interpolation_delay": 0.05,
+    "relay_url": "",
+    "relay_wake_timeout": 60.0,
+    "relay_waking_notice_after": 3.0,
+    "relay_retry_interval": 2.0,
+    "relay_handshake_timeout": 10.0,
+    "relay_ping_interval": 2.0,
+    "relay_silence_limit": 6.0,
+    "relay_unreliable_buffer_limit": 16384
   },
   "campaign": {
     "lives": 3,

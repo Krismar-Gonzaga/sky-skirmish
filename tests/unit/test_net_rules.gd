@@ -149,7 +149,7 @@ func test_input_state_carries_every_field() -> void:
 
 
 func test_local_addresses_skip_loopback() -> void:
-	for address: String in NetworkManager.local_ipv4_addresses():
+	for address: String in LanDiscovery.local_ipv4_addresses():
 		assert_false(address.begins_with("127."), address)
 		assert_false(address.contains(":"), address)
 

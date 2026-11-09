@@ -12,10 +12,12 @@ VERBOSE="${1:-}"
 LOGS="$(mktemp -d)"
 FAILED=0
 PORT=47950
+RELAY=""
+RELAY_PID=""
 
 probe() {
 	"$GODOT" --headless --path . -s res://tests/net/net_probe.gd -- \
-		--role="$1" --scenario="$2" --port="$3" >"$LOGS/$2_$1.log" 2>&1
+		--role="$1" --scenario="$2" --port="$3" --relay="$RELAY" \n		--codefile="$LOGS/$2.code" >"$LOGS/$2_$1.log" 2>&1
 }
 
 report() {
@@ -62,6 +64,52 @@ no_host_status=$?
 echo "== no_host: client exit $no_host_status"
 report no_host
 if [ "$no_host_status" -ne 0 ]; then FAILED=1; fi
+
+start_relay() {
+	PORT=$((PORT + 1))
+	RELAY="ws://127.0.0.1:$PORT"
+	(cd server && PORT=$1 exec node relay.js) >"$LOGS/relay.log" 2>&1 &
+	RELAY_PID=$!
+}
+
+if [ ! -d server/node_modules ]; then
+	(cd server && npm ci --no-audit --no-fund) || exit 1
+fi
+
+start_relay "$((PORT + 1))"
+sleep 1
+pair t7 yes yes
+pair online_t10 yes yes
+pair online_client_drops yes no
+pair online_host_drops no yes
+pair online_rematch yes yes
+
+PORT=$((PORT + 1))
+probe client t8 "$PORT"
+t8_status=$?
+echo "== t8: client exit $t8_status"
+report t8
+if [ "$t8_status" -ne 0 ]; then FAILED=1; fi
+
+kill "$RELAY_PID" 2>/dev/null
+wait "$RELAY_PID" 2>/dev/null
+
+# The server comes up 5 s after the client starts, like a free host waking.
+PORT=$((PORT + 1))
+WAKE_PORT=$PORT
+RELAY="ws://127.0.0.1:$WAKE_PORT"
+probe client waking "$WAKE_PORT" &
+waking_pid=$!
+sleep 5
+(cd server && PORT=$WAKE_PORT exec node relay.js) >"$LOGS/relay2.log" 2>&1 &
+RELAY_PID=$!
+wait "$waking_pid"
+waking_status=$?
+echo "== waking: client exit $waking_status"
+report waking
+if [ "$waking_status" -ne 0 ]; then FAILED=1; fi
+kill "$RELAY_PID" 2>/dev/null
+wait "$RELAY_PID" 2>/dev/null
 
 rm -rf "$LOGS"
 if [ "$FAILED" -ne 0 ]; then

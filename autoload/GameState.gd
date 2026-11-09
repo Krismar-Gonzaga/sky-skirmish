@@ -20,6 +20,8 @@ const UNLOCK_ALL_FLAG := "--unlock-all"
 const HOST_FLAG := "--host"
 const JOIN_FLAG := "--join="
 const PROFILE_FLAG := "--profile="
+const RELAY_FLAG := "--relay="
+const ROOM_FLAG := "--room="
 const FADE_LAYER := 200
 const FADE_TIME := 0.18
 
@@ -32,6 +34,11 @@ var notice: String = ""
 ## Set by --host and --join=, for testing two instances on one PC.
 var auto_host: bool = false
 var auto_join: String = ""
+## Set by --relay= and --room=.
+var relay_override: String = ""
+var auto_room: String = ""
+## The lobby a forfeit winner returns to.
+var current_lobby: String = LAN_LOBBY
 ## Set by the --level flag and cleared once used.
 var requested_level: int = 0
 var last_result: Dictionary = {}
@@ -59,6 +66,10 @@ func _ready() -> void:
 			auto_host = true
 		elif argument.begins_with(JOIN_FLAG):
 			auto_join = argument.trim_prefix(JOIN_FLAG)
+		elif argument.begins_with(RELAY_FLAG):
+			relay_override = argument.trim_prefix(RELAY_FLAG)
+		elif argument.begins_with(ROOM_FLAG):
+			auto_room = argument.trim_prefix(ROOM_FLAG).to_upper()
 		elif argument.begins_with(PROFILE_FLAG):
 			# Two instances on one PC must not share a save file.
 			ProgressService.use_directory("user://profiles".path_join(argument.trim_prefix(PROFILE_FLAG)))

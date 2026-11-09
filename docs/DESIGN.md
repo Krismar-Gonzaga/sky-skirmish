@@ -398,6 +398,13 @@ These fill gaps in the sections above.
 - Leaving a match from the menu forfeits it and counts as a loss.
 - The menu in a 1 vs 1 match does not pause the game, because the other player's game cannot be frozen.
 
+### Online
+
+- The relay address is `relay_url` in `data/tuning.json`, or the `--relay` flag.
+- The relay only forwards packets to the other player in a room and stamps the sender itself.
+- WebSockets deliver everything in order, so a client drops unreliable updates when its send buffer backs up, keeping the newest state moving.
+- A connection that fails during the 60 second wake-up allowance is retried every 2 seconds, because a sleeping free-tier server may refuse connections while it starts.
+
 ### Bots
 
 - Navigation is a directed A* graph over map tiles. A bot can fly up through a one-way platform but must walk off its edge to go down, matching the player's rules.
