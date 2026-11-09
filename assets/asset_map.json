@@ -9,39 +9,65 @@
     "amber": "#ffb238",
     "flame": "#ff6b35",
     "teal": "#3fc1c9",
-    "danger": "#e5484d"
+    "danger": "#e5484d",
+    "moss": "#6fcf7c",
+    "dusk": "#1b2742",
+    "haze": "#25345a"
   },
   "sprites": {
-    "player.legs": {
-      "texture": "",
-      "color": "steel",
-      "polygon": [[-10, -30], [10, -30], [10, 0], [-10, 0]]
-    },
-    "player.torso": {
-      "texture": "",
-      "color": "teal",
-      "polygon": [[-14, -54], [14, -54], [14, -26], [-14, -26]]
-    },
-    "player.head": {
-      "texture": "",
-      "color": "text",
-      "polygon": [[0, -72], [9, -67], [9, -57], [0, -52], [-9, -57], [-9, -67]]
-    },
-    "player.jetpack": {
-      "texture": "",
-      "color": "muted",
-      "polygon": [[-23, -52], [-13, -52], [-13, -24], [-23, -24]]
-    },
-    "player.arm": {
-      "texture": "",
-      "color": "amber",
-      "polygon": [[0, -4], [30, -4], [30, 4], [0, 4]]
-    }
+    "player.legs": {"texture": "", "color": "steel", "polygon": [[-10, -30], [10, -30], [10, 0], [-10, 0]]},
+    "player.torso": {"texture": "", "color": "teal", "polygon": [[-14, -54], [14, -54], [14, -26], [-14, -26]]},
+    "player.head": {"texture": "", "color": "text", "polygon": [[0, -72], [9, -67], [9, -57], [0, -52], [-9, -57], [-9, -67]]},
+    "player.jetpack": {"texture": "", "color": "muted", "polygon": [[-23, -52], [-13, -52], [-13, -24], [-23, -24]]},
+    "player.arm": {"texture": "", "color": "amber", "polygon": [[0, -4], [20, -4], [20, 4], [0, 4]]},
+
+    "weapon.pistol": {"texture": "", "color": "muted", "polygon": [[18, -5], [34, -5], [34, 1], [18, 1]]},
+    "weapon.rifle": {"texture": "", "color": "slate", "polygon": [[10, -5], [50, -5], [50, 1], [10, 1]]},
+    "weapon.shotgun": {"texture": "", "color": "flame", "polygon": [[10, -6], [44, -6], [44, 3], [10, 3]]},
+    "weapon.sniper": {"texture": "", "color": "text", "polygon": [[6, -4], [64, -4], [64, 0], [6, 0]]},
+    "weapon.rocket": {"texture": "", "color": "moss", "polygon": [[-6, -8], [46, -8], [46, 6], [-6, 6]]},
+
+    "projectile.bullet": {"texture": "", "color": "amber", "polygon": [[-14, -1.5], [3, -1.5], [3, 1.5], [-14, 1.5]]},
+    "projectile.pellet": {"texture": "", "color": "flame", "polygon": [[-7, -1.5], [2, -1.5], [2, 1.5], [-7, 1.5]]},
+    "projectile.tracer": {"texture": "", "color": "text", "polygon": [[-40, -1], [4, -1], [4, 1], [-40, 1]]},
+    "projectile.rocket": {"texture": "", "color": "moss", "polygon": [[-14, -5], [8, -5], [15, 0], [8, 5], [-14, 5]]},
+
+    "grenade.frag": {"texture": "", "color": "moss", "polygon": [[0, -7], [5, -5], [7, 0], [5, 5], [0, 7], [-5, 5], [-7, 0], [-5, -5]]},
+    "pickup.crate": {"texture": "", "color": "amber", "polygon": [[-20, -20], [20, -20], [20, 20], [-20, 20]]},
+    "pickup.health": {"texture": "", "color": "moss", "polygon": [[-6, -18], [6, -18], [6, -6], [18, -6], [18, 6], [6, 6], [6, 18], [-6, 18], [-6, 6], [-18, 6], [-18, -6], [-6, -6]]}
   },
   "tiles": {
     "solid": {"texture": "", "color": "slate"},
     "solid_top": {"texture": "", "color": "slate", "top_color": "teal", "top_height": 4},
     "oneway": {"texture": "", "color": "muted", "top_color": "amber", "top_height": 4, "height": 12},
     "decor": {"texture": "", "color": "panel"}
+  },
+  "backdrop": [
+    {
+      "scroll": 0.15, "color": "dusk", "repeat_width": 1600.0, "base_y": 350.0,
+      "polygon": [[0, 0], [200, -260], [420, -80], [640, -330], [900, -60], [1130, -290], [1380, -110], [1600, 0], [1600, 2400], [0, 2400]]
+    },
+    {
+      "scroll": 0.4, "color": "haze", "repeat_width": 1200.0, "base_y": 640.0,
+      "polygon": [[0, 0], [160, -150], [330, -40], [560, -210], [760, -30], [990, -170], [1200, 0], [1200, 2400], [0, 2400]]
+    }
+  ],
+  "sounds": {
+    "shot_pistol": {"file": "", "wave": "square", "duration": 0.09, "start_hz": 900.0, "end_hz": 260.0, "decay": 2.0, "volume": 0.3},
+    "shot_rifle": {"file": "", "wave": "noise", "duration": 0.08, "smooth": 0.7, "decay": 2.5, "volume": 0.4},
+    "shot_shotgun": {"file": "", "wave": "noise", "duration": 0.22, "smooth": 0.35, "decay": 2.5, "volume": 0.7},
+    "shot_sniper": {"file": "", "wave": "noise", "duration": 0.3, "smooth": 0.6, "decay": 3.5, "volume": 0.75},
+    "shot_rocket": {"file": "", "wave": "sine", "duration": 0.3, "start_hz": 180.0, "end_hz": 70.0, "decay": 1.2, "volume": 0.7},
+    "explosion": {"file": "", "wave": "noise", "duration": 0.6, "smooth": 0.12, "decay": 2.2, "volume": 1.0},
+    "grenade_throw": {"file": "", "wave": "sine", "duration": 0.14, "start_hz": 300.0, "end_hz": 620.0, "decay": 1.5, "volume": 0.35},
+    "grenade_bounce": {"file": "", "wave": "square", "duration": 0.05, "start_hz": 520.0, "end_hz": 380.0, "decay": 3.0, "volume": 0.2},
+    "melee": {"file": "", "wave": "noise", "duration": 0.12, "smooth": 0.2, "decay": 2.0, "volume": 0.5},
+    "hit": {"file": "", "wave": "square", "duration": 0.06, "start_hz": 240.0, "end_hz": 120.0, "decay": 2.0, "volume": 0.3},
+    "death": {"file": "", "wave": "sine", "duration": 0.5, "start_hz": 420.0, "end_hz": 70.0, "decay": 1.0, "volume": 0.6},
+    "respawn": {"file": "", "wave": "sine", "duration": 0.35, "start_hz": 260.0, "end_hz": 880.0, "decay": 1.2, "volume": 0.4},
+    "pickup": {"file": "", "wave": "square", "duration": 0.16, "start_hz": 520.0, "end_hz": 1040.0, "decay": 1.2, "volume": 0.25},
+    "reload": {"file": "", "wave": "square", "duration": 0.1, "start_hz": 180.0, "end_hz": 320.0, "decay": 1.5, "volume": 0.25},
+    "swap": {"file": "", "wave": "square", "duration": 0.07, "start_hz": 340.0, "end_hz": 460.0, "decay": 1.5, "volume": 0.2},
+    "jet": {"file": "", "wave": "noise", "duration": 0.5, "smooth": 0.15, "decay": 0.0, "volume": 0.22, "loop": true}
   }
 }

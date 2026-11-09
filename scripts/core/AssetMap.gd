@@ -46,6 +46,27 @@ static func tile_texture(key: String, tile_size: int) -> Texture2D:
 	return ImageTexture.create_from_image(image)
 
 
+static func sound_keys() -> Array:
+	return _load().get("sounds", {}).keys()
+
+
+static func create_sound(key: String) -> AudioStream:
+	var sounds: Dictionary = _load().get("sounds", {})
+	var entry: Dictionary = sounds.get(key, {})
+	var file_path: String = entry.get("file", "")
+	if not file_path.is_empty():
+		return load(file_path) as AudioStream
+	return SfxSynth.create(entry)
+
+
+static func backdrop_layers() -> Array:
+	return _load().get("backdrop", [])
+
+
+static func to_points(raw: Array) -> PackedVector2Array:
+	return _to_points(raw)
+
+
 static func _load() -> Dictionary:
 	if _data.is_empty():
 		_data = DataFile.load_dictionary(PATH)

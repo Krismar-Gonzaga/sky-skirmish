@@ -5,8 +5,8 @@
 | Milestone | Status |
 | --- | --- |
 | M0 Setup and skeleton | Done |
-| M1 Player movement | Done, awaiting review |
-| M2 Combat | Not started |
+| M1 Player movement | Done |
+| M2 Combat | Done, awaiting review |
 | M3 Bots | Not started |
 | M4 Campaign and level progression | Not started |
 | M5 Menus and screens | Not started |
@@ -29,25 +29,28 @@
 
 Waiting on the team. Agreed items are recorded in `docs/DESIGN.md`.
 
-- A. Crate contents. Proposed: campaign crates drop only unlocked weapons; multiplayer crates drop all weapons.
+- A. Crate contents, needed in M4. Proposed: campaign crates drop only unlocked weapons; multiplayer crates drop all weapons. `Arena.setup` already takes the weapon list.
 - B. "Offline practice" (section 3) has no screen in section 8. Proposed: campaign replay counts as practice.
-- C. Node version. Node 20 reached end-of-life in April 2026. Proposed: target Node 24 LTS, keep code compatible with 20.
-- D. Choosing the "Sky Ace" skin. Proposed: a toggle in Settings, shown once earned.
+- C. Node version, needed in M7. Node 20 reached end-of-life in April 2026. Proposed: target Node 24 LTS, keep code compatible with 20.
+- D. Choosing the "Sky Ace" skin, needed in M5. Proposed: a toggle in Settings, shown once earned.
 
-## How to try M1
+## How to try the sandbox
 
-- Desktop: press F5 in the editor. A/D walk, W or Space jet, S crouch, mouse aims, F3 toggles the debug overlay.
+- Desktop: press F5 in the editor. A/D walk, W or Space jet, S crouch, mouse aims, left click fires, G grenade, Q swap, F melee, F3 debug overlay.
 - On-screen controls with a mouse: `godot --path . -- --touch` (one finger only).
 
 ## Known issues
 
-- `run/main_scene` points at `MovementSandbox` until the Splash screen is built in M5.
+- `run/main_scene` points at `Sandbox` until the Splash screen is built in M5.
+- Aim assist is saved in Settings by the design but not built yet. Planned for M5 with the Settings screen.
+- The Pause button arrives with the pause flow in M5.
+- Placeholder sound effects are synthesised. They have only been checked for existence, so someone must listen to them.
 - Real multi-touch feel has not been tried on a phone. Multi-touch logic is covered by automated event tests; the first APK comes in M8.
-- M8 must add `data/*.json` and `assets/asset_map.json` to the export include filter, and check they load in the APK.
+- M8 must add `data/*.json`, `data/maps/*.json` and `assets/asset_map.json` to the export include filter, and check they load in the APK.
 - `DebugOverlay` lives in the sandbox scene for now and shows ping as "-" until M6.
 - JDK 17 is missing. To be checked at M8; the default (non-Gradle) export may work with JDK 21.
 - `icon.svg` is still the Godot default. Replaced in M8.
 
 ## Next steps
 
-Review M1, answer questions A–D, then start M2.
+Review M2, answer questions A–D, then start M3.

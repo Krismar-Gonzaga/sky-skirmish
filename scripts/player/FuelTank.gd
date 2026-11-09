@@ -19,6 +19,11 @@ func _init(config: Dictionary) -> void:
 	amount = capacity
 
 
+func refill() -> void:
+	amount = capacity
+	_time_on_ground = 0.0
+
+
 ## Advances the tank by delta seconds and returns true if the jet fires.
 func update(delta: float, wants_thrust: bool, on_floor: bool) -> bool:
 	if wants_thrust and amount > 0.0:

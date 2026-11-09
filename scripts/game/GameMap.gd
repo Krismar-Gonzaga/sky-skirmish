@@ -5,14 +5,18 @@ extends Node2D
 
 enum Collision { NONE, SOLID, ONE_WAY }
 
-const WORLD_PHYSICS_LAYER := 1
 const FILL_SOURCE := 0
 const SURFACE_SOURCE := 1
 const NO_TILE := -1
+## Crates and packs float this far above the surface they sit on.
+const PICKUP_HEIGHT := 22.0
 
 @export_file("*.json") var layout_path: String = ""
 
 var spawn_points: Array[Vector2] = []
+## Each entry: {"position": Vector2, "weapon": String}. Empty weapon means random.
+var crates: Array[Dictionary] = []
+var health_packs: Array[Vector2] = []
 
 var _tile_size: int = 0
 var _size_in_tiles: Vector2i = Vector2i.ZERO
@@ -38,8 +42,7 @@ func _ready() -> void:
 		_fill(layers[rect["layer"]], rect)
 	_fill_border()
 	_apply_surface_tiles()
-	for spawn: Array in layout["spawns"]:
-		spawn_points.append(_feet_position(Vector2i(int(spawn[0]), int(spawn[1]))))
+	_read_points(layout)
 	# Collision would otherwise appear a frame late and let the first fall pass through.
 	for layer: TileMapLayer in [_decor, _solid, _one_way]:
 		layer.update_internals()
@@ -50,6 +53,22 @@ func _ready() -> void:
 func get_bounds() -> Rect2:
 	var border := Vector2i(_border_tiles, _border_tiles)
 	return Rect2(Vector2(-border * _tile_size), Vector2((_size_in_tiles + border * 2) * _tile_size))
+
+
+func _read_points(layout: Dictionary) -> void:
+	for spawn: Array in layout["spawns"]:
+		spawn_points.append(_feet_position(_cell(spawn)))
+	for crate: Dictionary in layout.get("crates", []):
+		crates.append({
+			"position": _pickup_position(_cell(crate["cell"])),
+			"weapon": crate.get("weapon", ""),
+		})
+	for pack: Array in layout.get("health_packs", []):
+		health_packs.append(_pickup_position(_cell(pack)))
+
+
+func _cell(pair: Array) -> Vector2i:
+	return Vector2i(int(pair[0]), int(pair[1]))
 
 
 func _fill(layer: TileMapLayer, rect: Dictionary) -> void:
@@ -79,13 +98,18 @@ func _feet_position(cell: Vector2i) -> Vector2:
 	return Vector2((cell.x + 0.5) * _tile_size, (cell.y + 1.0) * _tile_size)
 
 
+func _pickup_position(cell: Vector2i) -> Vector2:
+	return _feet_position(cell) + Vector2.UP * PICKUP_HEIGHT
+
+
 ## Each key becomes one tile source; the source id is its index in tile_keys.
 func _make_tile_set(tile_keys: Array[String], collision: Collision) -> TileSet:
 	var tile_set := TileSet.new()
 	tile_set.tile_size = Vector2i(_tile_size, _tile_size)
 	if collision != Collision.NONE:
+		var layer_bit: int = PhysicsLayers.PLATFORMS if collision == Collision.ONE_WAY else PhysicsLayers.WORLD
 		tile_set.add_physics_layer()
-		tile_set.set_physics_layer_collision_layer(0, WORLD_PHYSICS_LAYER)
+		tile_set.set_physics_layer_collision_layer(0, layer_bit)
 		tile_set.set_physics_layer_collision_mask(0, 0)
 	for source_id: int in tile_keys.size():
 		var source := TileSetAtlasSource.new()

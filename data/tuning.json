@@ -19,9 +19,27 @@
     "refill_per_second": 50.0,
     "refill_delay": 0.5
   },
+  "health": {
+    "max_hp": 100.0,
+    "regen_per_second": 5.0,
+    "regen_delay": 5.0,
+    "respawn_delay": 3.0
+  },
+  "pickups": {
+    "respawn_time": 20.0,
+    "health_pack": 50.0,
+    "touch_radius": 30.0
+  },
+  "explosion": {
+    "knockback": 420.0
+  },
   "camera": {
     "aim_lead": 140.0,
-    "follow_rate": 8.0
+    "follow_rate": 8.0,
+    "zoom_rate": 6.0,
+    "shake_max_offset": 22.0,
+    "shake_decay": 1.8,
+    "explosion_trauma": 0.7
   },
   "touch": {
     "stick_radius": 110.0,

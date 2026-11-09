@@ -206,9 +206,9 @@ sky-skirmish/
     core/        Tuning.gd, DataFile.gd, AssetMap.gd
     input/       PlayerInput.gd, InputProvider.gd and its implementations
     player/      Player.gd, PlayerMotor.gd, FuelTank.gd, PlayerVisual.gd
-    game/        GameMap.gd, AimCamera.gd
-    ui/          VirtualStick.gd, TouchActionButton.gd, TouchControls.gd
-    weapons/     Weapon.gd (base), Pistol.gd, Rifle.gd, ...
+    game/        Arena.gd, GameMap.gd, AimCamera.gd, CombatEffects.gd, Pickup.gd
+    ui/          Hud.gd, VirtualStick.gd, TouchActionButton.gd, TouchControls.gd
+    weapons/     Weapon.gd (base), Pistol.gd, Rifle.gd, Loadout.gd, Projectile.gd, ...
   data/          tuning.json, levels.json, weapons.json, difficulty.json, maps/
   assets/        asset_map.json, theme/, sprites/, tiles/, audio/, fonts/
   server/        relay.js, package.json
@@ -223,6 +223,7 @@ sky-skirmish/
 | Player (CharacterBody2D) | Movement, jetpack, health, holds 2 weapons; reads input locally or from the network |
 | Weapon (base class) | Fire rate, ammo, reload, spawns Projectile; subclasses set stats from weapons.json |
 | Bot (extends Player) | A Player with a BotBrain attached; BotBrain is the AI state machine that writes the same input struct a human produces |
+| Arena | Turns shots into projectiles, applies damage, handles pickups and respawns, reports every event as a signal |
 | Match | Spawns players, tracks score and timer, decides win/lose, emits match_ended |
 | LevelManager | Loads levels.json, builds the mission for a level, checks the objective |
 | ProgressService | Reads and writes save.json, unlocks levels, weapons and maps |
@@ -367,6 +368,10 @@ These fill gaps in the sections above.
 - Right stick: below 70% of the radius it aims only. Past 70% it auto-fires. A quick flick and release fires one shot.
 - Jetpack fuel does not refill while the jet control is held, which prevents stutter-hopping on an empty tank.
 - Bots regenerate health with the same Player code as humans.
+- Bullets and rockets pass through one-way platforms. Grenades bounce off them, and fighters stand on them.
+- Weapon pickups: a weapon already held gains a magazine. A new weapon takes the free slot, or replaces the weapon in hand. It is selected at once.
+- A weapon with no ammo left is dropped. A fighter who loses both weapons gets the pistol back.
+- The frag grenade's splash radius is 120 px, because Section 3 gives only the rocket's.
 
 ### Missions
 

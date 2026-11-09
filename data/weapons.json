@@ -1,0 +1,60 @@
+{
+  "weapons": {
+    "pistol": {
+      "display_name": "Pistol",
+      "damage": 15.0, "pellets": 1, "fire_rate": 4.0, "magazine": 12, "reserve": -1,
+      "reload_time": 1.0, "spread_degrees": 2.0, "projectile_speed": 1100.0, "range": 800.0,
+      "splash_radius": 0.0, "self_damage_factor": 0.0,
+      "view_zoom": 1.0, "aim_lead_factor": 1.0, "projectile": "bullet"
+    },
+    "rifle": {
+      "display_name": "Assault Rifle",
+      "damage": 12.0, "pellets": 1, "fire_rate": 10.0, "magazine": 30, "reserve": 90,
+      "reload_time": 1.8, "spread_degrees": 4.0, "projectile_speed": 1300.0, "range": 950.0,
+      "splash_radius": 0.0, "self_damage_factor": 0.0,
+      "view_zoom": 1.0, "aim_lead_factor": 1.0, "projectile": "bullet"
+    },
+    "shotgun": {
+      "display_name": "Shotgun",
+      "damage": 8.0, "pellets": 6, "fire_rate": 1.2, "magazine": 6, "reserve": 18,
+      "reload_time": 2.2, "spread_degrees": 12.0, "projectile_speed": 1000.0, "range": 380.0,
+      "splash_radius": 0.0, "self_damage_factor": 0.0,
+      "view_zoom": 1.0, "aim_lead_factor": 1.0, "projectile": "pellet"
+    },
+    "sniper": {
+      "display_name": "Sniper",
+      "damage": 70.0, "pellets": 1, "fire_rate": 0.8, "magazine": 5, "reserve": 15,
+      "reload_time": 2.5, "spread_degrees": 0.0, "projectile_speed": 2400.0, "range": 2400.0,
+      "splash_radius": 0.0, "self_damage_factor": 0.0,
+      "view_zoom": 0.65, "aim_lead_factor": 2.4, "projectile": "tracer"
+    },
+    "rocket": {
+      "display_name": "Rocket Launcher",
+      "damage": 60.0, "pellets": 1, "fire_rate": 0.6, "magazine": 2, "reserve": 6,
+      "reload_time": 2.8, "spread_degrees": 0.0, "projectile_speed": 700.0, "range": 1600.0,
+      "splash_radius": 96.0, "self_damage_factor": 0.5,
+      "view_zoom": 1.0, "aim_lead_factor": 1.3, "projectile": "rocket"
+    }
+  },
+  "grenade": {
+    "damage": 80.0,
+    "count_per_life": 3,
+    "fuse": 2.5,
+    "splash_radius": 120.0,
+    "self_damage_factor": 0.5,
+    "throw_speed": 620.0,
+    "bounce": 0.55,
+    "body_radius": 7.0,
+    "rest_speed": 30.0,
+    "cooldown": 0.6
+  },
+  "melee": {
+    "damage": 25.0,
+    "range": 58.0,
+    "cone_degrees": 75.0,
+    "cooldown": 0.45
+  },
+  "aim": {
+    "crouch_spread_factor": 0.5
+  }
+}

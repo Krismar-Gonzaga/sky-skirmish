@@ -3,20 +3,32 @@ extends Node2D
 ## Draws a fighter from AssetMap parts. Purely cosmetic: it reads the pose and
 ## never changes gameplay state.
 
+const HIT_FLASH_SHADER := preload("res://assets/shaders/hit_flash.gdshader")
 const SHOULDER := Vector2(0.0, -44.0)
 const NOZZLE := Vector2(-18.0, -24.0)
+const FLASH_TIME := 0.14
+const FADE_IN_TIME := 0.35
+const SWING_ANGLE := 1.3
+const SWING_TIME := 0.08
 
 var _body: Node2D
 var _arm: Node2D
+var _held_weapon: Node2D
+var _held_weapon_id: String = ""
 var _flame: CPUParticles2D
+var _flash_material: ShaderMaterial
+var _swing_offset: float = 0.0
 
 
 func _ready() -> void:
+	_flash_material = ShaderMaterial.new()
+	_flash_material.shader = HIT_FLASH_SHADER
 	_body = Node2D.new()
+	_body.material = _flash_material
 	add_child(_body)
 	for part: String in ["player.jetpack", "player.legs", "player.torso", "player.head"]:
-		_body.add_child(AssetMap.create_visual(part))
-	_arm = AssetMap.create_visual("player.arm")
+		_body.add_child(_create_part(part))
+	_arm = _create_part("player.arm")
 	_arm.position = SHOULDER
 	_body.add_child(_arm)
 	_flame = _create_flame()
@@ -27,8 +39,56 @@ func _ready() -> void:
 func update_pose(aim: Vector2, height_ratio: float, thrusting: bool) -> void:
 	var facing: float = -1.0 if aim.x < 0.0 else 1.0
 	_body.scale = Vector2(facing, height_ratio)
-	_arm.rotation = Vector2(aim.x * facing, aim.y).angle()
+	_arm.rotation = Vector2(aim.x * facing, aim.y).angle() + _swing_offset
 	_flame.emitting = thrusting
+
+
+func show_weapon(weapon_id: String) -> void:
+	if weapon_id == _held_weapon_id:
+		return
+	_held_weapon_id = weapon_id
+	if _held_weapon != null:
+		_held_weapon.queue_free()
+	_held_weapon = _create_part("weapon.%s" % weapon_id)
+	_arm.add_child(_held_weapon)
+
+
+func flash_hit() -> void:
+	var tween: Tween = create_tween()
+	_flash_material.set_shader_parameter("flash_amount", 1.0)
+	tween.tween_method(_set_flash, 1.0, 0.0, FLASH_TIME)
+
+
+func swing_arm() -> void:
+	var tween: Tween = create_tween()
+	tween.tween_method(_set_swing, -SWING_ANGLE, SWING_ANGLE, SWING_TIME)
+	tween.tween_method(_set_swing, SWING_ANGLE, 0.0, SWING_TIME)
+
+
+func hide_body() -> void:
+	visible = false
+	_flame.emitting = false
+
+
+func fade_in() -> void:
+	visible = true
+	modulate.a = 0.0
+	create_tween().tween_property(self, "modulate:a", 1.0, FADE_IN_TIME)
+
+
+func _set_flash(amount: float) -> void:
+	_flash_material.set_shader_parameter("flash_amount", amount)
+
+
+func _set_swing(angle: float) -> void:
+	_swing_offset = angle
+
+
+func _create_part(key: String) -> Node2D:
+	var part: Node2D = AssetMap.create_visual(key)
+	# Parts share the body's material so one flash covers the whole fighter.
+	part.use_parent_material = true
+	return part
 
 
 func _create_flame() -> CPUParticles2D:
