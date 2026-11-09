@@ -41,9 +41,20 @@ func _ready() -> void:
 func setup(map: GameMap, crate_pool: Array[String]) -> void:
 	_spawn_points = map.spawn_points
 	for crate: Dictionary in map.crates:
-		_add_pickup(Pickup.Kind.WEAPON, crate["position"], crate["weapon"], crate_pool)
+		# Early levels have no unlocked weapons to put in a random crate.
+		if not (crate["weapon"] as String).is_empty() or not crate_pool.is_empty():
+			_add_pickup(Pickup.Kind.WEAPON, crate["position"], crate["weapon"], crate_pool)
 	for spot: Vector2 in map.health_packs:
 		_add_pickup(Pickup.Kind.HEALTH, spot, "", crate_pool)
+
+
+## Removes everything tied to the current map, ready for setup() with a new one.
+func clear_world() -> void:
+	for child: Node in get_children():
+		if child is Pickup or child is FragGrenade:
+			child.queue_free()
+		elif child is Projectile and (child as Projectile).visible:
+			_release_projectile(child as Projectile)
 
 
 func register_fighter(fighter: Player) -> void:
@@ -169,7 +180,7 @@ func _deal(victim: Player, amount: float, attacker: Player) -> void:
 
 func _on_fighter_died(victim: Player, killer: Player) -> void:
 	fighter_killed.emit(victim, killer)
-	if respawn_enabled:
+	if respawn_enabled and victim.respawns:
 		await get_tree().create_timer(respawn_delay, false).timeout
 		if is_instance_valid(victim):
 			victim.respawn(_choose_spawn(victim))

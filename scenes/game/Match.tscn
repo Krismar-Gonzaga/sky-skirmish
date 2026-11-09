@@ -1,0 +1,29 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/Match.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/game/ParallaxBackdrop.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/game/Arena.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/game/CombatEffects.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/game/AimCamera.gd" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="6"]
+[ext_resource type="Script" path="res://scripts/debug/DebugOverlay.gd" id="7"]
+
+[node name="Match" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Backdrop" type="Node2D" parent="."]
+script = ExtResource("2")
+
+[node name="Arena" type="Node2D" parent="."]
+script = ExtResource("3")
+
+[node name="Effects" type="Node2D" parent="."]
+script = ExtResource("4")
+
+[node name="Camera" type="Camera2D" parent="."]
+script = ExtResource("5")
+
+[node name="HUD" parent="." instance=ExtResource("6")]
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("7")

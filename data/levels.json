@@ -1,0 +1,25 @@
+{
+  "levels": [
+    {"id": 1, "title": "First Flight", "map": "outpost", "mission_type": "tutorial", "target": 3,
+     "bot_count": 0, "difficulty": "easy", "time_limit": 0, "dummy_hp": 45, "reward": null},
+    {"id": 2, "title": "Contact", "map": "outpost", "mission_type": "eliminate", "target": 5,
+     "bot_count": 2, "difficulty": "easy", "time_limit": 180, "reward": {"type": "weapon", "id": "rifle"}},
+    {"id": 3, "title": "Hold Out", "map": "outpost", "mission_type": "survive", "target": 90,
+     "bot_count": 4, "difficulty": "easy", "time_limit": 90, "reward": null},
+    {"id": 4, "title": "Canyon Run", "map": "canyon", "mission_type": "eliminate", "target": 8,
+     "bot_count": 3, "difficulty": "normal", "time_limit": 180, "reward": {"type": "weapon", "id": "shotgun"}},
+    {"id": 5, "title": "High Ground", "map": "canyon", "mission_type": "capture", "target": 30,
+     "bot_count": 3, "difficulty": "normal", "time_limit": 150, "reward": {"type": "map", "id": "canyon"}},
+    {"id": 6, "title": "No Margin", "map": "canyon", "mission_type": "eliminate", "target": 10,
+     "bot_count": 4, "difficulty": "normal", "time_limit": 210, "max_deaths": 2, "reward": {"type": "weapon", "id": "sniper"}},
+    {"id": 7, "title": "Firestorm", "map": "skyforge", "mission_type": "survive", "target": 120,
+     "bot_count": 6, "difficulty": "hard", "time_limit": 120, "reward": null},
+    {"id": 8, "title": "The Warden", "map": "skyforge", "mission_type": "boss", "target": 1,
+     "bot_count": 3, "difficulty": "hard", "time_limit": 180, "leader_hp": 300, "reward": {"type": "weapon", "id": "rocket"}},
+    {"id": 9, "title": "Forge Sweep", "map": "skyforge", "mission_type": "eliminate", "target": 15,
+     "bot_count": 5, "difficulty": "hard", "time_limit": 240, "reward": {"type": "map", "id": "skyforge"}},
+    {"id": 10, "title": "Gauntlet", "map": "outpost", "mission_type": "gauntlet", "target": 3,
+     "bot_count": 4, "difficulty": "expert", "time_limit": 360,
+     "wave_maps": ["outpost", "canyon", "skyforge"], "reward": {"type": "skin", "id": "sky_ace"}}
+  ]
+}

@@ -56,6 +56,11 @@
   "map": {
     "one_way_thickness": 12.0
   },
+  "campaign": {
+    "lives": 3,
+    "three_star_time_ratio": 0.25,
+    "end_delay": 1.4
+  },
   "bot": {
     "retreat_below": 0.3,
     "recover_at": 0.6,

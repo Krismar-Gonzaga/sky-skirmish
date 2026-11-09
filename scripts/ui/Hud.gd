@@ -49,6 +49,16 @@ func set_time_left(seconds: float) -> void:
 	_timer_label.text = "%d:%02d" % [floori(whole / 60.0), whole % 60]
 
 
+func hide_time() -> void:
+	_timer_label.text = ""
+
+
+func show_banner(text: String) -> void:
+	_countdown_label.visible = true
+	_countdown_label.text = text
+	_respawn_left = 0.0
+
+
 func _process(delta: float) -> void:
 	if _respawn_left > 0.0:
 		_respawn_left -= delta

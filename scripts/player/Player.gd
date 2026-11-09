@@ -16,6 +16,8 @@ signal grenades_changed(count: int)
 
 ## Fighters on the same team cannot hurt each other.
 var team: int = 0
+## False for target dummies and gauntlet waves, which stay dead.
+var respawns: bool = true
 ## Null means the fighter stands idle.
 var input_provider: InputProvider
 var fuel: FuelTank
@@ -124,6 +126,10 @@ func heal(amount: float) -> void:
 
 func give_weapon(weapon_id: String) -> void:
 	loadout.pickup(weapon_id)
+
+
+func set_visual_scale(factor: float) -> void:
+	_visual.scale = Vector2(factor, factor)
 
 
 func apply_knockback(impulse: Vector2) -> void:

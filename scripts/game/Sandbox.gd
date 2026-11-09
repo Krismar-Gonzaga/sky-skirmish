@@ -29,7 +29,7 @@ func _ready() -> void:
 	_arena.setup(_map, WeaponCatalog.crate_weapon_ids())
 	_context = BotContext.new(_map, _arena)
 	var player: Player = _spawn(PlayerScene, _map.spawn_points[0], PLAYER_TEAM)
-	var provider: InputProvider = _create_provider()
+	var provider: InputProvider = InputFactory.create_local_provider()
 	add_child(provider)
 	player.input_provider = provider
 	_camera.target = player
@@ -86,12 +86,3 @@ func _spawn(scene: PackedScene, at: Vector2, team: int) -> Player:
 	fighter.global_position = at
 	_arena.register_fighter(fighter)
 	return fighter
-
-
-func _create_provider() -> InputProvider:
-	var wants_touch: bool = "--touch" in OS.get_cmdline_user_args()
-	if wants_touch:
-		Input.emulate_touch_from_mouse = true
-	if wants_touch or OS.has_feature("mobile"):
-		return TouchInputProvider.new()
-	return KeyboardMouseInputProvider.new()

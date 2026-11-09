@@ -12,15 +12,15 @@ config_version=5
 
 config/name="Sky Skirmish"
 config/version="0.1.0"
-run/main_scene="res://scenes/game/Sandbox.tscn"
+run/main_scene="res://scenes/ui/LevelSelect.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 Settings="*res://autoload/Settings.gd"
-ProgressService="*res://autoload/ProgressService.gd"
 LevelManager="*res://autoload/LevelManager.gd"
+ProgressService="*res://autoload/ProgressService.gd"
 GameState="*res://autoload/GameState.gd"
 AudioManager="*res://autoload/AudioManager.gd"
 NetworkManager="*res://autoload/NetworkManager.gd"

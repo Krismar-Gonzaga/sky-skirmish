@@ -210,6 +210,7 @@ sky-skirmish/
     ui/          Hud.gd, VirtualStick.gd, TouchActionButton.gd, TouchControls.gd
     weapons/     Weapon.gd (base), Pistol.gd, Rifle.gd, Loadout.gd, Projectile.gd, ...
     bots/        Bot.gd, BotBrain.gd, BotDecision.gd, JetNavGraph.gd, PathFollower.gd
+    missions/    Mission.gd (base), Eliminate, Survive, Capture, Boss, Gauntlet, Tutorial
   data/          tuning.json, levels.json, weapons.json, difficulty.json, maps/
   assets/        asset_map.json, theme/, sprites/, tiles/, audio/, fonts/
   server/        relay.js, package.json
@@ -379,6 +380,8 @@ These fill gaps in the sections above.
 - `bot_count` is the number of bots alive at once. Bots respawn after 3 s, except in gauntlet waves. The Level 8 escorts respawn.
 - Level 6's "max 2 deaths" is a `max_deaths` field. It matches the 3-lives rule today and can be tuned separately.
 - Capture time is cumulative and pauses while the zone is empty or contested.
+- Progress is saved the moment a level is cleared, so closing the app on Level Results loses nothing. Level Results announces the unlock.
+- Bots start at the spawn points farthest from the player. Tutorial dummies use the nearest.
 
 ### Progress and modes
 

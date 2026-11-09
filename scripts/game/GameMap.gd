@@ -17,6 +17,8 @@ var spawn_points: Array[Vector2] = []
 ## Each entry: {"position": Vector2, "weapon": String}. Empty weapon means random.
 var crates: Array[Dictionary] = []
 var health_packs: Array[Vector2] = []
+## World-space area for capture missions; empty on maps without one.
+var capture_zone: Rect2 = Rect2()
 
 var _tile_size: int = 0
 var _size_in_tiles: Vector2i = Vector2i.ZERO
@@ -99,6 +101,9 @@ func _read_points(layout: Dictionary) -> void:
 		})
 	for pack: Array in layout.get("health_packs", []):
 		health_packs.append(_pickup_position(_cell(pack)))
+	if layout.has("capture_zone"):
+		var zone: Dictionary = layout["capture_zone"]
+		capture_zone = Rect2(Vector2(_cell(zone["cell"]) * _tile_size), Vector2(_cell(zone["size"]) * _tile_size))
 
 
 func _cell(pair: Array) -> Vector2i:

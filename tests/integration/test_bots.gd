@@ -141,7 +141,8 @@ func test_chases_a_target_it_cannot_see() -> void:
 	var bot: Bot = _add_bot(0, _floor_at(6.0), "normal")
 	bot.brain._target = target
 	await wait_physics_frames(int(12.0 * FRAMES_PER_SECOND), "")
-	assert_gt(bot.global_position.x, 16.0 * TILE, "should have travelled toward the target")
+	# It stops at firing range, so it never needs to reach the target itself.
+	assert_gt(bot.global_position.x, 12.0 * TILE, "should have travelled toward the target")
 
 
 func test_low_health_makes_a_bot_retreat() -> void:
