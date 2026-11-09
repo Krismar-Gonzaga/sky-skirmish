@@ -264,6 +264,8 @@ func _on_joined(peer_id: int, code: String) -> void:
 func _on_peer_left(peer_id: int) -> void:
 	if _is_host:
 		_remote_id = 0
+		# Godot reports an error for a packet from a peer it no longer knows.
+		_incoming = _incoming.filter(func(packet: Dictionary) -> bool: return packet["peer"] != peer_id)
 		peer_disconnected.emit(peer_id)
 	else:
 		_on_link_down()

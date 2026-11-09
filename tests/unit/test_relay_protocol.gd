@@ -110,6 +110,16 @@ func test_host_keeps_the_room_when_the_guest_leaves() -> void:
 	assert_eq(peer._get_connection_status(), MultiplayerPeer.CONNECTION_CONNECTED)
 
 
+func test_packets_from_a_departed_guest_are_discarded() -> void:
+	peer._is_host = true
+	peer._unique_id = 1
+	peer.handle_frame(_joined(1, "K7Q2PX"))
+	peer.handle_frame(_joined(2, "K7Q2PX"))
+	peer.handle_frame(RelayProtocol.data(2, 0, 0, PackedByteArray([1])))
+	peer.handle_frame(_peer_left(2))
+	assert_eq(peer._get_available_packet_count(), 0)
+
+
 func test_guest_is_disconnected_when_the_host_leaves() -> void:
 	peer.handle_frame(_joined(2, "K7Q2PX"))
 	watch_signals(peer)
