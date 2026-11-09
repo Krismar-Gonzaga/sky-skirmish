@@ -242,6 +242,23 @@ func test_match_results_show_a_draw() -> void:
 	assert_not_null(screen.find_child("Leave", true, false))
 
 
+func test_every_control_on_every_menu_meets_the_touch_target() -> void:
+	# 48 dp on a phone in landscape is about 96 canvas units.
+	const MIN_HEIGHT := 96.0
+	GameState.last_result = {"level_id": 2, "cleared": true, "stars": 2, "time": 100.0, "deaths": 1, "kills": 5}
+	GameState.last_match_result = {"winner": "Ace", "forfeit": false, "players": []}
+	for scene_path: String in ALL_SCREENS:
+		if scene_path == GameState.MATCH_SCENE:
+			continue
+		var screen: Control = _open(scene_path)
+		await wait_physics_frames(1, "")
+		for class_name_to_check: String in ["Button", "LineEdit", "HSlider"]:
+			for found: Node in screen.find_children("*", class_name_to_check, true, false):
+				var control := found as Control
+				assert_gte(control.get_combined_minimum_size().y, MIN_HEIGHT,
+						"%s on %s" % [control.name, scene_path])
+
+
 func test_multiplayer_menu_shows_a_notice_once() -> void:
 	GameState.notice = "Connection lost"
 	var screen: Control = _open(GameState.MULTIPLAYER_MENU)

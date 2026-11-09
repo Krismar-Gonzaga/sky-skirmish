@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="124" height="124" x="2" y="2" fill="#363d52" stroke="#212532" stroke-width="4" rx="14"/><g fill="#fff" transform="translate(12.322 12.322)scale(.101)"><path d="M105 673v33q407 354 814 0v-33z"/><path fill="#478cbf" d="m105 673 152 14q12 1 15 14l4 67 132 10 8-61q2-11 15-15h162q13 4 15 15l8 61 132-10 4-67q3-13 15-14l152-14V427q30-39 56-81-35-59-83-108-43 20-82 47-40-37-88-64 7-51 8-102-59-28-123-42-26 43-46 89-49-7-98 0-20-46-46-89-64 14-123 42 1 51 8 102-48 27-88 64-39-27-82-47-48 49-83 108 26 42 56 81zm0 33v39c0 276 813 276 814 0v-39l-134 12-5 69q-2 10-14 13l-162 11q-12 0-16-11l-10-65H446l-10 65q-4 11-16 11l-162-11q-12-3-14-13l-5-69z"/><path d="M483 600c0 34 58 34 58 0v-86c0-34-58-34-58 0z"/><circle cx="725" cy="526" r="90"/><circle cx="299" cy="526" r="90"/></g><g fill="#414042" transform="translate(12.322 12.322)scale(.101)"><circle cx="307" cy="532" r="60"/><circle cx="717" cy="532" r="60"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
+<rect data-layer="bg" width="432" height="432" fill="#12192b"/>
+<polygon data-layer="bg" points="0,300 96,190 176,262 280,150 432,296 432,432 0,432" fill="#1b2742"/>
+<polygon data-layer="bg" points="0,364 110,290 216,352 320,282 432,352 432,432 0,432" fill="#25345a"/>
+<polygon data-layer="fg" points="150,268 174,360 198,268" fill="#ff6b35"/>
+<polygon data-layer="fg" points="161,268 174,326 187,268" fill="#ffb238"/>
+<rect data-layer="fg" x="146" y="166" width="56" height="102" rx="10" fill="#8a96ad"/>
+<rect data-layer="fg" x="214" y="238" width="60" height="92" rx="10" fill="#4a5a78"/>
+<rect data-layer="fg" x="198" y="150" width="92" height="98" rx="12" fill="#3fc1c9"/>
+<polygon data-layer="fg" points="244,72 284,94 284,136 244,158 204,136 204,94" fill="#f2f5fa"/>
+<rect data-layer="fg" x="240" y="178" width="118" height="30" rx="8" fill="#ffb238"/>
+<rect data-layer="fg" x="336" y="168" width="40" height="22" rx="4" fill="#8a96ad"/>
+</svg>

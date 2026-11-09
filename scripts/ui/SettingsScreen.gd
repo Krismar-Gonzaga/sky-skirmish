@@ -4,7 +4,7 @@ extends MenuScreen
 ## and leaving without saving puts the old values back.
 
 const LABEL_FONT_SIZE := 24
-const SLIDER_SIZE := Vector2(400.0, 72.0)
+const SLIDER_SIZE := Vector2(400.0, 96.0)
 const FIELD_WIDTH := 400.0
 const COLUMN_GAP := 56
 const SKY_ACE := "sky_ace"
